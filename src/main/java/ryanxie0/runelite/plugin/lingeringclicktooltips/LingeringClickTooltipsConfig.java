@@ -147,17 +147,26 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "anchorTooltips",
 		name = "Anchor tooltips",
-		description = "Choose whether to anchor tooltips to the mouse cursor",
+		description = "Choose whether tooltips follow the mouse cursor",
 		position = 0,
 		section = location
 	)
 	default boolean anchorTooltips() { return false; }
 
 	@ConfigItem(
+		keyName = "clampTooltips",
+		name = "Clamp tooltips",
+		description = "Choose whether to prevent tooltips from rendering offscreen",
+		position = 1,
+		section = location
+	)
+	default boolean clampTooltips() { return true; }
+
+	@ConfigItem(
 		keyName = "tooltipXOffset",
 		name = "Tooltip x offset",
 		description = "Horizontal offset, higher values move the tooltip further right",
-		position = 1,
+		position = 2,
 		section = location
 	)
 	@Range(max = 100)
@@ -167,7 +176,7 @@ public interface LingeringClickTooltipsConfig extends Config
 		keyName = "tooltipYOffset",
 		name = "Tooltip y offset",
 		description = "Vertical offset, positive values move the tooltip down",
-		position = 2,
+		position = 3,
 		section = location
 	)
 	@Range(min = -100, max = 100)
@@ -213,7 +222,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "trackerMode",
 		name = "Tracker mode",
-		description = "Tooltips became anchored and permanent, trivial clicks shown",
+		description = "Tooltips become permanent and follow the cursor, trivial clicks shown",
 		position = 2,
 		section = modes
 	)
@@ -247,10 +256,28 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideContinue() { return true; }
 
 	@ConfigItem(
+		keyName = "hideWield",
+		name = "Wield",
+		description = "Choose whether wield (not from menu) should be hidden",
+		position = 3,
+		section = trivialClicks
+	)
+	default boolean hideWield() { return true; }
+
+	@ConfigItem(
+		keyName = "hideWear",
+		name = "Wear",
+		description = "Choose whether wear (not from menu) should be hidden",
+		position = 4,
+		section = trivialClicks
+	)
+	default boolean hideWear() { return true; }
+
+	@ConfigItem(
 		keyName = "hideShiftDrop",
 		name = "Shift drop",
 		description = "Choose whether shift drop should be hidden",
-		position = 3,
+		position = 5,
 		section = trivialClicks
 	)
 	default boolean hideShiftDrop() { return true; }
@@ -259,7 +286,7 @@ public interface LingeringClickTooltipsConfig extends Config
 		keyName = "hideUseInitiate",
 		name = "Use initiate",
 		description = "Choose whether use initiate (not from menu) should be hidden",
-		position = 4,
+		position = 6,
 		section = trivialClicks
 	)
 	default boolean hideUseInitiate() { return true; }
@@ -268,7 +295,7 @@ public interface LingeringClickTooltipsConfig extends Config
 		keyName = "hideEat",
 		name = "Eat",
 		description = "Choose whether eat (not from menu) should be hidden",
-		position = 5,
+		position = 7,
 		section = trivialClicks
 	)
 	default boolean hideEat() { return true; }
@@ -277,7 +304,7 @@ public interface LingeringClickTooltipsConfig extends Config
 		keyName = "hidePuzzles",
 		name = "Puzzles",
 		description = "Choose whether puzzles should be hidden",
-		position = 6,
+		position = 8,
 		section = trivialClicks
 	)
 	default boolean hidePuzzles() { return true; }

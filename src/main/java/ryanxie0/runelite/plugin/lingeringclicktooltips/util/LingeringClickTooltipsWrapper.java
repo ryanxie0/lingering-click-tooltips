@@ -34,6 +34,7 @@ import java.time.Instant;
 public class LingeringClickTooltipsWrapper {
     private boolean isFaded;
     private boolean isInfoTooltip;
+    private boolean isClamped;
     private String text;
     private Color backgroundColor;
     private Instant time;

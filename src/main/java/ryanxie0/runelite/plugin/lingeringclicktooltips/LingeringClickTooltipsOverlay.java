@@ -34,6 +34,7 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 import net.runelite.client.ui.overlay.components.LayoutableRenderableEntity;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsUtil;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsWrapper;
 import javax.inject.Inject;
 import java.awt.Dimension;
@@ -63,15 +64,6 @@ public class LingeringClickTooltipsOverlay extends Overlay
         setPriority(OverlayPriority.HIGHEST);
     }
 
-//    protected void updateLifespanValues(LingeringClickTooltipsConfig config)
-//    {
-//        baseTooltipDuration = Duration.ofMillis(config.tooltipDuration());
-//        fastModeTooltipDuration = Duration.ofMillis(baseTooltipDuration.toMillis() / 2);
-//        baseFadeout = baseTooltipDuration.toMillis() * config.tooltipFadeout() / 100.0;
-//        lightModeFadeout = baseFadeout * 2.0;
-//        infoTooltipFadeout = baseFadeout / 2.0;
-//    }
-
     @Override
     public Dimension render(Graphics2D graphics)
     {
@@ -90,7 +82,12 @@ public class LingeringClickTooltipsOverlay extends Overlay
             }
             else
             {
-                tooltipComponent.render(graphics);
+                Dimension dimension = tooltipComponent.render(graphics);
+                if (config.clampTooltips() && !tooltip.isClamped())
+                {
+                    tooltip.setLocation(LingeringClickTooltipsUtil.getClampedLocation(dimension, client, tooltip.getLocation()));
+                    tooltip.setClamped(true);
+                }
             }
         }
         else

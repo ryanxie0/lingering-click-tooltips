@@ -36,6 +36,8 @@ public class LingeringClickTooltipsTrivialClicksMapper {
 
     private static final String WALK_HERE = "Walk here";
     private static final String CONTINUE = "Continue";
+    private static final String WIELD = "Wield";
+    private static final String WEAR = "Wear";
     private static final String SHIFT_DROP = "Drop";
     private static final String USE = "Use";
     private static final String EAT = "Eat";
@@ -55,6 +57,8 @@ public class LingeringClickTooltipsTrivialClicksMapper {
         defaultTrivialClicks.add("Logout");
         updateTrivialClicks(config.hideWalkHere(), WALK_HERE);
         updateTrivialClicks(config.hideContinue(), CONTINUE);
+        updateTrivialClicks(config.hideWield(), WIELD);
+        updateTrivialClicks(config.hideWear(), WEAR);
         updateTrivialClicks(config.hideShiftDrop(), SHIFT_DROP);
         updateTrivialClicks(config.hideUseInitiate(), USE);
         updateTrivialClicks(config.hideEat(), EAT);
@@ -88,6 +92,12 @@ public class LingeringClickTooltipsTrivialClicksMapper {
                 break;
             case "hideContinue":
                 updateTrivialClicks(config.hideContinue(), CONTINUE);
+                break;
+            case "hideWield":
+                updateTrivialClicks(config.hideWield(), WIELD);
+                break;
+            case "hideWear:":
+                updateTrivialClicks(config.hideWear(), WEAR);
                 break;
             case "hideShiftDrop":
                 updateTrivialClicks(config.hideShiftDrop(), SHIFT_DROP);

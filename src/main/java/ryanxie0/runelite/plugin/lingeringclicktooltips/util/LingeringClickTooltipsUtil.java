@@ -25,10 +25,12 @@
  */
 package ryanxie0.runelite.plugin.lingeringclicktooltips.util;
 
+import net.runelite.api.Client;
 import net.runelite.client.util.Text;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig;
-import java.awt.Point;
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.Dimension;
 import java.time.Instant;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsTextToColorMapper.*;
@@ -40,6 +42,7 @@ public class LingeringClickTooltipsUtil {
         LingeringClickTooltipsWrapper tooltipWrapper = new LingeringClickTooltipsWrapper();
         tooltipWrapper.setFaded(false);
         tooltipWrapper.setInfoTooltip(isInfoTooltip);
+        tooltipWrapper.setClamped(false);
         tooltipWrapper.setText(tooltipText);
         tooltipWrapper.setBackgroundColor(getTooltipBackgroundColor(tooltipText));
         tooltipWrapper.setTime(Instant.now());
@@ -98,8 +101,40 @@ public class LingeringClickTooltipsUtil {
 
     public static Point getOffsetLocation(Point location, LingeringClickTooltipsConfig config)
     {
-        location.x += config.tooltipXOffset();
-        location.y += config.tooltipYOffset();
+        if (config.anchorTooltips() || config.trackerMode()) // no need to calculate location for anchored tooltips
+        {
+            return null;
+        }
+        location.translate(config.tooltipXOffset(), config.tooltipYOffset());
         return location;
+    }
+
+    public static Point getClampedLocation(Dimension dimension, Client client, Point location)
+    {
+        Point clampOffset = new Point(location.x, location.y);
+
+        int xMin = client.getViewportXOffset();
+        int xMax = client.getViewportWidth() + xMin;
+        int yMin = client.getViewportYOffset();
+        int yMax = client.getViewportHeight() + yMin;
+
+        if (clampOffset.x < xMin)
+        {
+            clampOffset.x = xMin;
+        }
+        else if (clampOffset.x + dimension.width > xMax)
+        {
+            clampOffset.x = xMax - dimension.width;
+        }
+
+        if (clampOffset.y < yMin)
+        {
+            clampOffset.y = yMin;
+        }
+        else if (clampOffset.y + dimension.height > yMax)
+        {
+            clampOffset.y = yMax - dimension.height;
+        }
+        return clampOffset;
     }
 }
