@@ -37,6 +37,7 @@ public class LingeringClickTooltipsTextToColorMapper {
     public static final String TOOLTIPS_SHOWN = "Tooltips SHOWN";
     public static final String DEFAULT_OVERLAY_BACKGROUND_COLOR = "runeLiteConfig.overlayBackgroundColor";
     public static final String CUSTOM_BACKGROUND_COLOR = "customBackgroundColor";
+    public static final String CUSTOM_TEXT_COLOR = "customTextColor";
 
     private static Map<String, Color> textToColorMap;
 
@@ -73,6 +74,7 @@ public class LingeringClickTooltipsTextToColorMapper {
     public void update(LingeringClickTooltipsConfig config)
     {
         updateTextToColorMap(config.useCustomBackgroundColor(), CUSTOM_BACKGROUND_COLOR, config.customBackgroundColor());
+        updateTextToColorMap(config.useCustomTextColor(), CUSTOM_TEXT_COLOR, config.customTextColor());
     }
 
     private void updateTextToColorMap(boolean configEnabled, String text, Color color)

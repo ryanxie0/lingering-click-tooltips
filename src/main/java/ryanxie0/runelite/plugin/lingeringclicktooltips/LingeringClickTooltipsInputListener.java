@@ -58,6 +58,20 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
     }
 
     @Override
+    public MouseEvent mouseEntered(MouseEvent e)
+    {
+        plugin.setMouseOverViewport(true);
+        return e;
+    }
+
+    @Override
+    public MouseEvent mouseExited(MouseEvent e)
+    {
+        plugin.setMouseOverViewport(false);
+        return e;
+    }
+
+    @Override
     public void keyTyped(KeyEvent e)
     {
 

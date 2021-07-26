@@ -26,7 +26,6 @@
 package ryanxie0.runelite.plugin.lingeringclicktooltips.util;
 
 import net.runelite.api.Client;
-import net.runelite.client.util.Text;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig;
 import java.awt.Color;
 import java.awt.Point;
@@ -37,7 +36,7 @@ import static ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClic
 
 public class LingeringClickTooltipsUtil {
 
-    public static LingeringClickTooltipsWrapper buildTooltipWrapper(String tooltipText, boolean isInfoTooltip, Point location)
+    public static LingeringClickTooltipsWrapper buildTooltipWrapper(String tooltipText, Point location, boolean isInfoTooltip)
     {
         LingeringClickTooltipsWrapper tooltipWrapper = new LingeringClickTooltipsWrapper();
         tooltipWrapper.setFaded(false);
@@ -45,27 +44,15 @@ public class LingeringClickTooltipsUtil {
         tooltipWrapper.setClamped(false);
         tooltipWrapper.setText(tooltipText);
         tooltipWrapper.setBackgroundColor(getTooltipBackgroundColor(tooltipText));
-        tooltipWrapper.setTime(Instant.now());
+        tooltipWrapper.setTimeOfCreation(Instant.now());
         tooltipWrapper.setLocation(location);
         return tooltipWrapper;
     }
 
-    public static String getTooltipText(String optionTags, String targetTags)
+    public static String getTooltipText(String option, String target)
     {
-        String option = Text.removeTags(optionTags);
-        String target = Text.removeTags(targetTags);
-        String tooltipText;
-
-        if (option.equals(target))
-        {
-            tooltipText = option;
-        }
-        else {
-            tooltipText = option + " " + target;
-        }
-
+        String tooltipText = option + (target.equals("") || option.equals(target) ? "" : " " + target);
         tooltipText = tooltipText.replaceAll("\\s+$", ""); // trim any trailing whitespace
-
         return tooltipText;
     }
 
@@ -85,6 +72,27 @@ public class LingeringClickTooltipsUtil {
         {
             return LingeringClickTooltipsTextToColorMapper.getColor(DEFAULT_OVERLAY_BACKGROUND_COLOR);
         }
+    }
+
+    public static String getTooltipTextWithColor(String tooltipText, LingeringClickTooltipsConfig config)
+    {
+        String tooltipTextWithColor = "";
+        Color customTextColor = LingeringClickTooltipsTextToColorMapper.getColor(CUSTOM_TEXT_COLOR);
+        if (customTextColor != null)
+        {
+            tooltipTextWithColor += "<col=" + colorToHex(customTextColor) + ">";
+            if (config.overrideMenuOptionColor())
+            {
+                tooltipText = tooltipText.replaceAll("<col=[0-f]{0,6}>", "");
+            }
+        }
+        tooltipTextWithColor += tooltipText;
+        return tooltipTextWithColor;
+    }
+
+    private static String colorToHex(Color color)
+    {
+        return Integer.toHexString(color.getRGB()).substring(2);
     }
 
     public static boolean shouldProcessClick(String tooltipText, boolean isHide, boolean isHotkeyPressed, LingeringClickTooltipsConfig config)

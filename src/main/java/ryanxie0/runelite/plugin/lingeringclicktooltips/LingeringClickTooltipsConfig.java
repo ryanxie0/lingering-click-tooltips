@@ -53,25 +53,27 @@ public interface LingeringClickTooltipsConfig extends Config
 	String appearance = "appearance";
 
 	@ConfigSection(
+		name = "Modes",
+		description = "Convenient operating modes for tooltips",
+		position = 2
+	)
+	String modes = "modes";
+
+	@ConfigSection(
 		name = "Location",
 		description = "Modify location of tooltips",
-		position = 2
+		position = 3,
+		closedByDefault = true
 	)
 	String location = "location";
 
 	@ConfigSection(
 		name = "Hotkey",
 		description = "Configure CTRL hotkey functionality",
-		position = 3
+		position = 4,
+		closedByDefault = true
 	)
 	String hotkey = "hotkey";
-
-	@ConfigSection(
-		name = "Modes",
-		description = "Convenient operating modes for tooltips",
-		position = 4
-	)
-	String modes = "modes";
 
 	@ConfigSection(
 		name = "Trivial Clicks",
@@ -107,99 +109,78 @@ public interface LingeringClickTooltipsConfig extends Config
 	default int tooltipFadeout() { return 50; }
 
 	@ConfigItem(
+		keyName = "maximumTooltipsShown",
+		name = "Max tooltips shown",
+		description = "The maximum number of tooltips shown at any given time",
+		position = 2,
+		section = lifespan
+	)
+	default int maximumTooltipsShown() { return 1; }
+
+	@ConfigItem(
 		keyName = "permanentTooltips",
 		name = "Permanent tooltips",
 		description = "Use tooltips that do not disappear",
-		position = 2,
+		position = 3,
 		section = lifespan
 	)
 	default boolean permanentTooltips() { return false; }
 
 	@ConfigItem(
+		keyName = "useCustomTextColor",
+		name = "Use custom text color",
+		description = "Choose whether to apply the custom text color below to non-info tooltips",
+		position = 0,
+		section = appearance
+	)
+	default boolean useCustomTextColor() { return false; }
+
+	@ConfigItem(
+		keyName = "customTextColor",
+		name = "Text color",
+		description = "Applied to non-info tooltips only",
+		position = 1,
+		section = appearance
+	)
+	default Color customTextColor() { return Color.WHITE; }
+
+	@ConfigItem(
 		keyName = "useCustomBackgroundColor",
 		name = "Use custom background color",
-		description = "Choose whether to apply the custom background color to non-info tooltips",
-		position = 0,
+		description = "Choose whether to apply the custom background color below to non-info tooltips",
+		position = 2,
 		section = appearance
 	)
 	default boolean useCustomBackgroundColor() { return false; }
 
 	@ConfigItem(
 		keyName = "customBackgroundColor",
-		name = "Custom background color",
+		name = "Background color",
 		description = "Applied to non-info tooltips only",
-		position = 1,
+		position = 3,
 		section = appearance
 	)
 	default Color customBackgroundColor() { return Color.BLACK; }
 
 	@ConfigItem(
-		keyName = "permanentTooltipOpacity",
-		name = "Permanent tooltip opacity",
-		description = "Opacity of permanent tooltips",
-		position = 3,
+		keyName = "overrideMenuOptionColor",
+		name = "Override menu option color",
+		description = "Choose whether custom text color should override menu option color",
+		position = 4,
+		section = appearance
+	)
+	default boolean overrideMenuOptionColor() { return false; }
+
+	@ConfigItem(
+		keyName = "tooltipStartOpacity",
+		name = "Tooltip start opacity",
+		description = "Opacity of tooltips when they first appear",
+		position = 5,
 		section = appearance
 	)
 	@Units(Units.PERCENT)
-	@Range(min = 5, max = 100)
-	default int permanentTooltipOpacity() { return 100; }
-
-	@ConfigItem(
-		keyName = "anchorTooltips",
-		name = "Anchor tooltips",
-		description = "Choose whether tooltips follow the mouse cursor",
-		position = 0,
-		section = location
-	)
-	default boolean anchorTooltips() { return false; }
-
-	@ConfigItem(
-		keyName = "clampTooltips",
-		name = "Clamp tooltips",
-		description = "Choose whether to prevent tooltips from rendering offscreen",
-		position = 1,
-		section = location
-	)
-	default boolean clampTooltips() { return true; }
-
-	@ConfigItem(
-		keyName = "tooltipXOffset",
-		name = "Tooltip x offset",
-		description = "Horizontal offset, higher values move the tooltip further right",
-		position = 2,
-		section = location
-	)
 	@Range(max = 100)
-	default int tooltipXOffset() { return 0; }
-
-	@ConfigItem(
-		keyName = "tooltipYOffset",
-		name = "Tooltip y offset",
-		description = "Vertical offset, positive values move the tooltip down",
-		position = 3,
-		section = location
-	)
-	@Range(min = -100, max = 100)
-	default int tooltipYOffset() { return -20; }
-
-	@ConfigItem(
-		keyName = "hotkeyToggleDelay",
-		name = "Hotkey toggle delay",
-		description = "Double-tap delay for the CTRL key to toggle tooltips, 0 to disable",
-		position = 0,
-		section = hotkey
-	)
-	@Units(Units.MILLISECONDS)
-	default int hotkeyToggleDelay() { return 250; }
-
-	@ConfigItem(
-		keyName = "hotkeyHideToggle",
-		name = "Hotkey hide toggle",
-		description = "Choose whether holding down the CTRL key shows tooltips",
-		position = 1,
-		section = hotkey
-	)
-	default boolean hotkeyHideToggle() { return true; }
+	default int tooltipStartOpacity() { return 100; }
 
 	@ConfigItem(
 		keyName = "fastMode",
@@ -227,6 +208,54 @@ public interface LingeringClickTooltipsConfig extends Config
 		section = modes
 	)
 	default boolean trackerMode() { return false; }
+
+	@ConfigItem(
+		keyName = "anchorTooltips",
+		name = "Anchor tooltips",
+		description = "Choose whether tooltips follow the mouse cursor",
+		position = 0,
+		section = location
+	)
+	default boolean anchorTooltips() { return false; }
+
+	@ConfigItem(
+		keyName = "tooltipXOffset",
+		name = "Tooltip x offset",
+		description = "Horizontal offset, higher values move the tooltip further right",
+		position = 1,
+		section = location
+	)
+	@Range(max = 100)
+	default int tooltipXOffset() { return 0; }
+
+	@ConfigItem(
+		keyName = "tooltipYOffset",
+		name = "Tooltip y offset",
+		description = "Vertical offset, positive values move the tooltip down",
+		position = 2,
+		section = location
+	)
+	@Range(min = -100, max = 100)
+	default int tooltipYOffset() { return -20; }
+
+	@ConfigItem(
+		keyName = "hotkeyToggleDelay",
+		name = "Hotkey toggle delay",
+		description = "Double-tap delay for the CTRL key to toggle tooltips, 0 to disable",
+		position = 0,
+		section = hotkey
+	)
+	@Units(Units.MILLISECONDS)
+	default int hotkeyToggleDelay() { return 250; }
+
+	@ConfigItem(
+		keyName = "hotkeyHideToggle",
+		name = "Hotkey hide toggle",
+		description = "Choose whether holding down the CTRL key shows tooltips",
+		position = 1,
+		section = hotkey
+	)
+	default boolean hotkeyHideToggle() { return true; }
 
 	@ConfigItem(
 		keyName = "hideTrivialClicks",
@@ -284,7 +313,7 @@ public interface LingeringClickTooltipsConfig extends Config
 
 	@ConfigItem(
 		keyName = "hideUseInitiate",
-		name = "Use initiate",
+		name = "Use",
 		description = "Choose whether use initiate (not from menu) should be hidden",
 		position = 6,
 		section = trivialClicks

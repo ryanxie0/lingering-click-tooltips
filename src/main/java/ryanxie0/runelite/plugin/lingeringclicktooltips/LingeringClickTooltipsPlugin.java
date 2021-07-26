@@ -45,6 +45,9 @@ import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickToolti
 import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsUtil;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsWrapper;
 import javax.inject.Inject;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsTextToColorMapper.*;
 
@@ -79,7 +82,15 @@ public class LingeringClickTooltipsPlugin extends Plugin
 
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
-	private LingeringClickTooltipsWrapper tooltip;
+	private Queue<LingeringClickTooltipsWrapper> tooltips;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private LingeringClickTooltipsWrapper infoTooltip;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private List<LingeringClickTooltipsWrapper> tooltipsToFlush;
 
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
@@ -88,6 +99,10 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
 	private boolean isHide;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
+	private boolean isMouseOverViewport;
 
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
@@ -103,6 +118,8 @@ public class LingeringClickTooltipsPlugin extends Plugin
 		mouseManager.registerMouseListener(inputListener);
 		keyManager.registerKeyListener(inputListener);
 		overlayManager.add(overlay);
+		tooltips = new LinkedList<>();
+		tooltipsToFlush = new LinkedList<>();
 		trivialClicksMapper = new LingeringClickTooltipsTrivialClicksMapper(config);
 		textToColorMapper = new LingeringClickTooltipsTextToColorMapper(runeLiteConfig, config);
 	}
@@ -113,11 +130,14 @@ public class LingeringClickTooltipsPlugin extends Plugin
 		mouseManager.unregisterMouseListener(inputListener);
 		keyManager.unregisterKeyListener(inputListener);
 		overlayManager.remove(overlay);
+		tooltips.clear();
+		tooltips = null;
+		tooltipsToFlush.clear();
+		tooltipsToFlush = null;
 		trivialClicksMapper.destroy();
 		trivialClicksMapper = null;
 		textToColorMapper.destroy();
 		textToColorMapper = null;
-		tooltip = null;
 	}
 
 	@Provides
@@ -131,6 +151,7 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	{
 		if (event.getGroup().equals(LingeringClickTooltipsConfig.CONFIG_GROUP))
 		{
+			tooltips.clear();
 			trivialClicksMapper.update(config, event.getKey());
 			textToColorMapper.update(config);
 		}
@@ -146,25 +167,37 @@ public class LingeringClickTooltipsPlugin extends Plugin
 		String tooltipText = LingeringClickTooltipsUtil.getTooltipText(event.getMenuOption(), event.getMenuTarget());
 		if (LingeringClickTooltipsUtil.shouldProcessClick(tooltipText, isHide, isHotkeyPressed, config))
 		{
-			this.tooltip = LingeringClickTooltipsUtil.buildTooltipWrapper(
-				tooltipText,
-				false,
-				LingeringClickTooltipsUtil.getOffsetLocation(inputListener.getLastClickPos(), config)
-			);
+			tooltips.add(LingeringClickTooltipsUtil.buildTooltipWrapper(
+				LingeringClickTooltipsUtil.getTooltipTextWithColor(tooltipText, config),
+				LingeringClickTooltipsUtil.getOffsetLocation(inputListener.getLastClickPos(), config),
+				false
+			));
+			if (tooltips.size() > config.maximumTooltipsShown())
+			{
+				tooltipsToFlush.add(tooltips.peek());
+			}
 		}
 	}
 
 	protected void showInfoTooltip(String infoTooltipText)
 	{
-		this.tooltip = LingeringClickTooltipsUtil.buildTooltipWrapper(
+		infoTooltip = LingeringClickTooltipsUtil.buildTooltipWrapper(
 			infoTooltipText,
-			true,
-			null
+			null,
+			true
 		);
 	}
 
 	protected void showToggledHideModeTooltip()
 	{
 		showInfoTooltip(isHide? TOOLTIPS_HIDDEN : TOOLTIPS_SHOWN);
+	}
+
+	public void flushTooltips()
+	{
+		for (LingeringClickTooltipsWrapper tooltip : tooltipsToFlush)
+		{
+			tooltips.remove(tooltip);
+		}
 	}
 }

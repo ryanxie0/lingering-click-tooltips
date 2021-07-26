@@ -41,6 +41,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Queue;
 
 public class LingeringClickTooltipsOverlay extends Overlay
 {
@@ -67,60 +68,107 @@ public class LingeringClickTooltipsOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        LingeringClickTooltipsWrapper tooltip = plugin.getTooltip();
-        if (tooltip == null || tooltip.isFaded())
+        plugin.flushTooltips();
+        renderInfoTooltip(plugin.getInfoTooltip(), graphics);
+        renderTooltips(plugin.getTooltips(), graphics);
+        return null;
+    }
+
+    private void renderTooltips(Queue<LingeringClickTooltipsWrapper> tooltips, Graphics2D graphics)
+    {
+        int queuePosition = 0;
+        for (LingeringClickTooltipsWrapper tooltip : tooltips)
         {
-            return null;
+            if (!tooltip.isClamped() && tooltip.getLocation() != null)
+            {
+                clampTooltip(tooltip, graphics);
+            }
+
+            if (queuePosition++ < config.maximumTooltipsShown())
+            {
+                if (config.permanentTooltips() || config.trackerMode())
+                {
+                    renderTooltip(tooltip, graphics, calculateTooltipFade(queuePosition, tooltips.size()));
+                }
+                else
+                {
+                    renderTooltip(tooltip, graphics, calculateTooltipFade(tooltip));
+                }
+            }
+
+            if (tooltip.isFaded())
+            {
+                plugin.getTooltipsToFlush().add(tooltip);
+            }
         }
-        double alphaModifier = calculateTooltipFade(tooltip);
-        if (alphaModifier > 0)
+    }
+
+    private void renderInfoTooltip(LingeringClickTooltipsWrapper infoTooltip, Graphics2D graphics)
+    {
+        if (infoTooltip != null && !infoTooltip.isFaded())
         {
-            LayoutableRenderableEntity tooltipComponent = getTooltipComponent(tooltip, alphaModifier);
+            renderTooltip(infoTooltip, graphics, calculateTooltipFade(infoTooltip));
+        }
+    }
+
+    private void renderTooltip(LingeringClickTooltipsWrapper tooltip, Graphics2D graphics, double alphaModifier)
+    {
+        if (alphaModifier > 0.0)
+        {
             if (tooltip.isInfoTooltip() || config.anchorTooltips() || config.trackerMode())
             {
-                tooltipManager.add(new Tooltip(tooltipComponent));
+                if (plugin.isMouseOverViewport())
+                {
+                    tooltipManager.addFront(new Tooltip(getTooltipComponent(tooltip, alphaModifier)));
+                }
+                else
+                {
+                    tooltipManager.addFront(new Tooltip(getTooltipComponent(tooltip, 0.0)));
+                }
             }
             else
             {
-                Dimension dimension = tooltipComponent.render(graphics);
-                if (config.clampTooltips() && !tooltip.isClamped())
-                {
-                    tooltip.setLocation(LingeringClickTooltipsUtil.getClampedLocation(dimension, client, tooltip.getLocation()));
-                    tooltip.setClamped(true);
-                }
+                getTooltipComponent(tooltip, alphaModifier).render(graphics);
             }
         }
         else
         {
-            plugin.getTooltip().setFaded(true);
+            tooltip.setFaded(true);
         }
-        return null;
     }
 
     private double calculateTooltipFade(LingeringClickTooltipsWrapper tooltip)
     {
-        if (!tooltip.isInfoTooltip() && (config.permanentTooltips() || config.trackerMode()))
-        {
-            return config.permanentTooltipOpacity() / 100.0;
-        }
-
-        double alphaModifier = 1.0;
+        double alphaModifier = config.tooltipStartOpacity() / 100.0;
 
         Duration tooltipDuration = getAdjustedTooltipDuration();
         double fadeout = getAdjustedTooltipFadeout(tooltip, tooltipDuration);
 
-        Duration since = Duration.between(tooltip.getTime(), Instant.now());
+        Duration since = Duration.between(tooltip.getTimeOfCreation(), Instant.now());
         long timeRemaining = (tooltipDuration.minus(since)).toMillis();
 
         if (timeRemaining <= 0) // to deal with imprecise time calculations
         {
-            alphaModifier = 0;
+            alphaModifier = 0.0;
         }
         else if (since.compareTo(tooltipDuration) < 0 && timeRemaining < fadeout && fadeout > 0)
         {
-            alphaModifier = Math.min(1.0, timeRemaining / fadeout);
+            alphaModifier = Math.min(config.tooltipStartOpacity() / 100.0, timeRemaining / fadeout);
         }
+
         return alphaModifier;
+    }
+
+    private double calculateTooltipFade(int queuePosition, int queueSize)
+    {
+        return config.tooltipStartOpacity() / 100.0 * (double) queuePosition / (double) queueSize;
+    }
+
+    private void clampTooltip(LingeringClickTooltipsWrapper tooltip, Graphics2D graphics)
+    {
+        Dimension dimension = getTooltipComponent(tooltip, 0.0).render(graphics);
+        tooltip.setLocation(LingeringClickTooltipsUtil.getClampedLocation(dimension, client, tooltip.getLocation()));
+        tooltip.setClamped(true);
     }
 
     private LayoutableRenderableEntity getTooltipComponent(LingeringClickTooltipsWrapper tooltip, double alphaModifier)
@@ -142,7 +190,7 @@ public class LingeringClickTooltipsOverlay extends Overlay
         int baseTooltipDuration = config.tooltipDuration();
         if (config.fastMode())
         {
-            return Duration.ofMillis(baseTooltipDuration /= 2);
+            return Duration.ofMillis(baseTooltipDuration / 2);
         }
         else
         {

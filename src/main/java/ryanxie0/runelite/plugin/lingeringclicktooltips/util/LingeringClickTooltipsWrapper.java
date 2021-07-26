@@ -37,6 +37,6 @@ public class LingeringClickTooltipsWrapper {
     private boolean isClamped;
     private String text;
     private Color backgroundColor;
-    private Instant time;
+    private Instant timeOfCreation;
     private Point location;
 }
