@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Cyborger1
+ * Copyright (c) 2021, Ryan Xie <ryanlxie@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,35 +23,23 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.util;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.components.wrapper;
 
+import lombok.Data;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.components.alpha.AlphaTooltipComponent;
+
+import java.awt.Point;
 import java.awt.Color;
+import java.time.Instant;
 
-public class AlphaUtil
-{
-	/**
-	 * Applies the given alpha modifier to the transparency of the given color.
-	 * @param color The color to get the alpha modified version of.
-	 * @param alphaModifier The alpha modifier.
-	 * @return The alpha modified color or the passed Color object if alphaModifier == 1.0.
-	 */
-	public static Color getAlphaModdedColor(Color color, double alphaModifier)
-	{
-		if (alphaModifier == 1.0)
-		{
-			return color;
-		}
-		else
-		{
-			int newAlpha = (int) (color.getAlpha() * alphaModifier);
-			// Clamp value to 0 - 255
-			newAlpha = Math.max(0, Math.min(newAlpha, 255));
-
-			return new Color(
-				color.getRed(),
-				color.getGreen(),
-				color.getBlue(),
-				newAlpha);
-		}
-	}
+@Data
+public class LingeringClickTooltipsWrapper {
+    private boolean isFaded;
+    private boolean isInfoTooltip;
+    private boolean isClamped;
+    private String text;
+    private Color backgroundColor;
+    private Instant timeOfCreation;
+    private Point location;
+    private AlphaTooltipComponent renderableComponent;
 }

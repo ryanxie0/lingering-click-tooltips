@@ -7,7 +7,6 @@ public class LingeringClickTooltipsTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(LingeringClickTooltipsPlugin.class);
 		RuneLite.main(args);
 	}
 }

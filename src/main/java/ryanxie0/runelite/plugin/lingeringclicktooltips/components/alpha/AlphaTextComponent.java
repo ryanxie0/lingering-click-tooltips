@@ -22,9 +22,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.components;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.components.alpha;
 
-import ryanxie0.runelite.plugin.lingeringclicktooltips.util.AlphaUtil;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;

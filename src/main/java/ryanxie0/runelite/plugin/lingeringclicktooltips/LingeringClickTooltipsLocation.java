@@ -23,20 +23,26 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.util;
+package ryanxie0.runelite.plugin.lingeringclicktooltips;
 
-import lombok.Data;
-import java.awt.Point;
-import java.awt.Color;
-import java.time.Instant;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
-public class LingeringClickTooltipsWrapper {
-    private boolean isFaded;
-    private boolean isInfoTooltip;
-    private boolean isClamped;
-    private String text;
-    private Color backgroundColor;
-    private Instant timeOfCreation;
-    private Point location;
+@Getter
+@RequiredArgsConstructor
+public enum LingeringClickTooltipsLocation {
+
+    LINGERING("Lingering"),
+    ANCHORED("Anchored"),
+    FIXED("Fixed");
+
+    private final String name;
+
+    @Override
+    public String toString()
+    {
+        return name;
+    }
+
+    public static final String TOOLTIP_LOCATION_CONFIG_KEY = "tooltipLocation";
 }

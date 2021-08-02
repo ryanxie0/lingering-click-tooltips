@@ -31,12 +31,20 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Units;
 import net.runelite.client.config.ConfigSection;
 import net.runelite.client.config.Range;
+import net.runelite.client.config.Alpha;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode;
+
 import java.awt.Color;
 
-@ConfigGroup(LingeringClickTooltipsConfig.CONFIG_GROUP)
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksConstants.*;
+
+@ConfigGroup(LingeringClickTooltipsConfig.GROUP_NAME)
 public interface LingeringClickTooltipsConfig extends Config
 {
-	String CONFIG_GROUP = "lingeringclicktooltips";
+	String GROUP_NAME = "lingeringclicktooltips";
+	String OVERLAY_PREFERRED_POSITION = "LingeringClickTooltipsOverlay_preferredPosition";
+	String OVERLAY_PREFERRED_LOCATION = "LingeringClickTooltipsOverlay_preferredLocation";
 
 	@ConfigSection(
 		name = "Lifespan",
@@ -60,25 +68,33 @@ public interface LingeringClickTooltipsConfig extends Config
 	String modes = "modes";
 
 	@ConfigSection(
+		name = "Filter lists",
+		description = "User-managed lists for filtering tooltips",
+		position = 3,
+		closedByDefault = true
+	)
+	String filterLists = "filterLists";
+
+	@ConfigSection(
 		name = "Location",
 		description = "Modify location of tooltips",
-		position = 3,
+		position = 4,
 		closedByDefault = true
 	)
 	String location = "location";
 
 	@ConfigSection(
-		name = "Hotkey",
-		description = "Configure CTRL hotkey functionality",
-		position = 4,
+		name = "Hotkeys",
+		description = "Configure hotkey functionality",
+		position = 5,
 		closedByDefault = true
 	)
-	String hotkey = "hotkey";
+	String hotkeys = "hotkeys";
 
 	@ConfigSection(
-		name = "Trivial Clicks",
+		name = "Trivial clicks",
 		description = "Declare which clicks are considered trivial",
-		position = 5,
+		position = 6,
 		closedByDefault = true
 	)
 	String trivialClicks = "trivialClicks";
@@ -115,6 +131,7 @@ public interface LingeringClickTooltipsConfig extends Config
 		position = 2,
 		section = lifespan
 	)
+	@Range(min = 1)
 	default int maximumTooltipsShown() { return 1; }
 
 	@ConfigItem(
@@ -127,7 +144,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean permanentTooltips() { return false; }
 
 	@ConfigItem(
-		keyName = "useCustomTextColor",
+		keyName = USE_CUSTOM_TEXT_COLOR,
 		name = "Use custom text color",
 		description = "Choose whether to apply the custom text color below to non-info tooltips",
 		position = 0,
@@ -136,7 +153,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean useCustomTextColor() { return false; }
 
 	@ConfigItem(
-		keyName = "customTextColor",
+		keyName = CUSTOM_TEXT_COLOR,
 		name = "Text color",
 		description = "Applied to non-info tooltips only",
 		position = 1,
@@ -145,7 +162,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default Color customTextColor() { return Color.WHITE; }
 
 	@ConfigItem(
-		keyName = "useCustomBackgroundColor",
+		keyName = USE_CUSTOM_BACKGROUND_COLOR,
 		name = "Use custom background color",
 		description = "Choose whether to apply the custom background color below to non-info tooltips",
 		position = 2,
@@ -153,8 +170,9 @@ public interface LingeringClickTooltipsConfig extends Config
 	)
 	default boolean useCustomBackgroundColor() { return false; }
 
+	@Alpha
 	@ConfigItem(
-		keyName = "customBackgroundColor",
+		keyName = CUSTOM_BACKGROUND_COLOR,
 		name = "Background color",
 		description = "Applied to non-info tooltips only",
 		position = 3,
@@ -210,18 +228,59 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean trackerMode() { return false; }
 
 	@ConfigItem(
-		keyName = "anchorTooltips",
-		name = "Anchor tooltips",
-		description = "Choose whether tooltips follow the mouse cursor",
+		keyName = "filterMode",
+		name = "Filter mode",
+		description = "Select the mode used for filtering tooltips based on user-managed lists",
+		position = 3,
+		section = modes
+	)
+	default LingeringClickTooltipsFilterMode filterMode() { return LingeringClickTooltipsFilterMode.NONE; }
+
+	@ConfigItem(
+		keyName = "blacklist",
+		name = "Blacklist",
+		description = "Tooltips matching text in this list will NOT show",
+		position = 0,
+		section = filterLists
+	)
+	default String blacklist() { return ""; }
+
+	@ConfigItem(
+		keyName = "blacklist",
+		name = "",
+		description = ""
+	)
+	void setBlacklist(String key);
+
+	@ConfigItem(
+		keyName = "whitelist",
+		name = "Whitelist",
+		description = "ONLY tooltips matching text in this list will show",
+		position = 1,
+		section = filterLists
+	)
+	default String whitelist() { return ""; }
+
+	@ConfigItem(
+		keyName = "whitelist",
+		name = "",
+		description = ""
+	)
+	void setWhitelist(String key);
+
+	@ConfigItem(
+		keyName = LingeringClickTooltipsLocation.TOOLTIP_LOCATION_CONFIG_KEY,
+		name = "Tooltip location",
+		description = "Lingering remains at the click point, anchored follows the mouse cursor, custom stays at a fixed location",
 		position = 0,
 		section = location
 	)
-	default boolean anchorTooltips() { return false; }
+	default LingeringClickTooltipsLocation tooltipLocation() { return LingeringClickTooltipsLocation.LINGERING; }
 
 	@ConfigItem(
 		keyName = "tooltipXOffset",
 		name = "Tooltip x offset",
-		description = "Horizontal offset, higher values move the tooltip further right",
+		description = "Horizontal offset for lingering tooltips, higher values move the tooltip further right",
 		position = 1,
 		section = location
 	)
@@ -231,7 +290,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "tooltipYOffset",
 		name = "Tooltip y offset",
-		description = "Vertical offset, positive values move the tooltip down",
+		description = "Vertical offset for lingering tooltips, positive values move the tooltip down",
 		position = 2,
 		section = location
 	)
@@ -239,26 +298,67 @@ public interface LingeringClickTooltipsConfig extends Config
 	default int tooltipYOffset() { return -20; }
 
 	@ConfigItem(
-		keyName = "hotkeyToggleDelay",
-		name = "Hotkey toggle delay",
-		description = "Double-tap delay for the CTRL key to toggle tooltips, 0 to disable",
+		keyName = "clampXPadding",
+		name = "Clamp x padding",
+		description = "The minimum distance between tooltip and left/right window border, 0 means no gap",
+		position = 3,
+		section = location
+	)
+	@Range(max = 30)
+	default int clampXPadding() { return 5; }
+
+	@ConfigItem(
+		keyName = "clampYPadding",
+		name = "Clamp y padding",
+		description = "The minimum distance between tooltip and top/bottom window border, 0 means no gap",
+		position = 4,
+		section = location
+	)
+	@Range(max = 30)
+	default int clampYPadding() { return 5; }
+
+	@ConfigItem(
+		keyName = "ctrlDoubleTapDelay",
+		name = "CTRL double-tap delay",
+		description = "Double-tap delay for CTRL to toggle tooltips, 0 to disable",
 		position = 0,
-		section = hotkey
+		section = hotkeys
 	)
 	@Units(Units.MILLISECONDS)
-	default int hotkeyToggleDelay() { return 250; }
+	@Range(max = 500)
+	default int ctrlDoubleTapDelay() { return 250; }
 
 	@ConfigItem(
-		keyName = "hotkeyHideToggle",
-		name = "Hotkey hide toggle",
-		description = "Choose whether holding down the CTRL key shows tooltips",
+		keyName = "ctrlTogglesHide",
+		name = "CTRL toggles hide",
+		description = "Choose whether holding CTRL shows tooltips normally",
 		position = 1,
-		section = hotkey
+		section = hotkeys
 	)
-	default boolean hotkeyHideToggle() { return true; }
+	default boolean ctrlTogglesHide() { return true; }
 
 	@ConfigItem(
-		keyName = "hideTrivialClicks",
+		keyName = "shiftDoubleTapDelay",
+		name = "SHIFT double-tap delay",
+		description = "Double-tap delay for SHIFT to black/whitelist tooltips, must be holding CTRL, 0 to disable",
+		position = 3,
+		section = hotkeys
+	)
+	@Units(Units.MILLISECONDS)
+	@Range(max = 600)
+	default int shiftDoubleTapDelay() { return 300; }
+
+	@ConfigItem(
+		keyName = "shiftPeeksFilterListAction",
+		name = "SHIFT peek",
+		description = "Choose whether holding SHIFT for more than SHIFT double-tap delay peeks filter list actions, must be holding CTRL",
+		position = 4,
+		section = hotkeys
+	)
+	default boolean shiftPeeksFilterListAction() { return true; }
+
+	@ConfigItem(
+		keyName = HIDE_TRIVIAL_CLICKS,
 		name = "Hide trivial clicks",
 		description = "Choose whether to hide trivial clicks such as walk",
 		position = 0,
@@ -267,7 +367,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideTrivialClicks() { return true; }
 
 	@ConfigItem(
-		keyName = "hideWalkHere",
+		keyName = HIDE_WALK_HERE,
 		name = "Walk here",
 		description = "Choose whether walk should be hidden",
 		position = 1,
@@ -276,16 +376,16 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideWalkHere() { return true; }
 
 	@ConfigItem(
-		keyName = "hideContinue",
-		name = "Continue",
-		description = "Choose whether continue should be hidden",
+		keyName = HIDE_WALK_HERE_WITH_TARGET,
+		name = "Walk here (with target)",
+		description = "Choose whether walk with a target should be hidden",
 		position = 2,
 		section = trivialClicks
 	)
-	default boolean hideContinue() { return true; }
+	default boolean hideWalkHereWithTarget() { return true; }
 
 	@ConfigItem(
-		keyName = "hideWield",
+		keyName = HIDE_WIELD,
 		name = "Wield",
 		description = "Choose whether wield (not from menu) should be hidden",
 		position = 3,
@@ -294,7 +394,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideWield() { return true; }
 
 	@ConfigItem(
-		keyName = "hideWear",
+		keyName = HIDE_WEAR,
 		name = "Wear",
 		description = "Choose whether wear (not from menu) should be hidden",
 		position = 4,
@@ -303,38 +403,74 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideWear() { return true; }
 
 	@ConfigItem(
-		keyName = "hideShiftDrop",
+		keyName = HIDE_TOGGLE_RUN,
+		name = "Toggle Run",
+		description = "Choose whether toggle run should be hidden",
+		position = 5,
+		section = trivialClicks
+	)
+	default boolean hideToggleRun() { return true; }
+
+	@ConfigItem(
+		keyName = HIDE_QUICK_PRAYERS,
+		name = "Quick-prayers",
+		description = "Choose whether toggle quick-prayers should be hidden",
+		position = 6,
+		section = trivialClicks
+	)
+	default boolean hideQuickPrayers() { return true; }
+
+	@ConfigItem(
+		keyName = HIDE_PRAYERS,
+		name = "Prayers",
+		description = "Choose whether toggling prayers from the prayer panel should be hidden",
+		position = 7,
+		section = trivialClicks
+	)
+	default boolean hidePrayers() { return true; }
+
+	@ConfigItem(
+		keyName = HIDE_SHIFT_DROP,
 		name = "Shift drop",
 		description = "Choose whether shift drop should be hidden",
-		position = 5,
+		position = 8,
 		section = trivialClicks
 	)
 	default boolean hideShiftDrop() { return true; }
 
 	@ConfigItem(
-		keyName = "hideUseInitiate",
+		keyName = HIDE_USE_INITIATE,
 		name = "Use",
 		description = "Choose whether use initiate (not from menu) should be hidden",
-		position = 6,
+		position = 9,
 		section = trivialClicks
 	)
 	default boolean hideUseInitiate() { return true; }
 
 	@ConfigItem(
-		keyName = "hideEat",
+		keyName = HIDE_EAT,
 		name = "Eat",
 		description = "Choose whether eat (not from menu) should be hidden",
-		position = 7,
+		position = 10,
 		section = trivialClicks
 	)
 	default boolean hideEat() { return true; }
 
 	@ConfigItem(
-		keyName = "hidePuzzles",
+		keyName = HIDE_PUZZLES,
 		name = "Puzzles",
 		description = "Choose whether puzzles should be hidden",
-		position = 8,
+		position = 11,
 		section = trivialClicks
 	)
 	default boolean hidePuzzles() { return true; }
+
+	@ConfigItem(
+		keyName = HIDE_PANELS,
+		name = "Panels (group)",
+		description = "Choose whether most clicks on panels should be hidden",
+		position = 12,
+		section = trivialClicks
+	)
+	default boolean hidePanels() { return true; }
 }

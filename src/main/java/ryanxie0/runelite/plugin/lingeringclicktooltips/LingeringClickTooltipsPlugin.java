@@ -26,10 +26,6 @@
 package ryanxie0.runelite.plugin.lingeringclicktooltips;
 
 import com.google.inject.Provides;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
@@ -40,18 +36,10 @@ import net.runelite.client.input.MouseManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsTextToColorMapper;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsTrivialClicksMapper;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsUtil;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsWrapper;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorManager;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksManager;
 import javax.inject.Inject;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.util.LingeringClickTooltipsTextToColorMapper.*;
-
-@Slf4j
 @PluginDescriptor(
 	name = "Lingering Click Tooltips",
 	description = "Generate configurable tooltips with left click mouse actions",
@@ -69,9 +57,6 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	private LingeringClickTooltipsOverlay overlay;
 
 	@Inject
-	private LingeringClickTooltipsInputListener inputListener;
-
-	@Inject
 	private MouseManager mouseManager;
 
 	@Inject
@@ -80,48 +65,33 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Inject
 	private OverlayManager overlayManager;
 
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private Queue<LingeringClickTooltipsWrapper> tooltips;
+	@Inject
+	private LingeringClickTooltipsQueueManager queueManager;
 
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private LingeringClickTooltipsWrapper infoTooltip;
+	@Inject
+	private LingeringClickTooltipsInputListener inputListener;
 
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private List<LingeringClickTooltipsWrapper> tooltipsToFlush;
+	@Inject
+	private LingeringClickTooltipsTrivialClicksManager trivialClicksManager;
 
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private boolean isHotkeyPressed;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private boolean isHide;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private boolean isMouseOverViewport;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private LingeringClickTooltipsTrivialClicksMapper trivialClicksMapper;
-
-	@Getter(AccessLevel.PACKAGE)
-	@Setter(AccessLevel.PACKAGE)
-	private LingeringClickTooltipsTextToColorMapper textToColorMapper;
+	@Inject
+	private LingeringClickTooltipsTextColorManager textColorManager;
 
 	@Override
 	protected void startUp() throws Exception
 	{
 		mouseManager.registerMouseListener(inputListener);
 		keyManager.registerKeyListener(inputListener);
+		inputListener.initialize(queueManager);
+
+		queueManager.initialize(inputListener);
+
 		overlayManager.add(overlay);
-		tooltips = new LinkedList<>();
-		tooltipsToFlush = new LinkedList<>();
-		trivialClicksMapper = new LingeringClickTooltipsTrivialClicksMapper(config);
-		textToColorMapper = new LingeringClickTooltipsTextToColorMapper(runeLiteConfig, config);
+		overlay.initialize(inputListener, queueManager);
+
+		trivialClicksManager.initialize();
+
+		textColorManager.initialize();
 	}
 
 	@Override
@@ -129,15 +99,16 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	{
 		mouseManager.unregisterMouseListener(inputListener);
 		keyManager.unregisterKeyListener(inputListener);
+		inputListener.destroy();
+
+		queueManager.destroy();
+
 		overlayManager.remove(overlay);
-		tooltips.clear();
-		tooltips = null;
-		tooltipsToFlush.clear();
-		tooltipsToFlush = null;
-		trivialClicksMapper.destroy();
-		trivialClicksMapper = null;
-		textToColorMapper.destroy();
-		textToColorMapper = null;
+		overlay.destroy();
+
+		trivialClicksManager.destroy();
+
+		textColorManager.destroy();
 	}
 
 	@Provides
@@ -149,55 +120,26 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (event.getGroup().equals(LingeringClickTooltipsConfig.CONFIG_GROUP))
+		if (!event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_LOCATION)
+			&& !event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_POSITION))
 		{
-			tooltips.clear();
-			trivialClicksMapper.update(config, event.getKey());
-			textToColorMapper.update(config);
+			queueManager.clear(); // not called when the user is moving the custom tooltip location
 		}
-		if (event.getKey().equals(RuneLiteConfig.overlaySettings))
+		if (event.getGroup().equals(LingeringClickTooltipsConfig.GROUP_NAME))
 		{
-			textToColorMapper.update(runeLiteConfig);
+			trivialClicksManager.updateFromConfig(event.getKey());
+			textColorManager.updateFromConfig(event.getKey());
+			overlay.updateFromConfig(event.getKey());
+		}
+		else if (event.getGroup().equals(runeLiteConfig.GROUP_NAME))
+		{
+			textColorManager.updateFromConfig(event.getKey());
 		}
 	}
 
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		String tooltipText = LingeringClickTooltipsUtil.getTooltipText(event.getMenuOption(), event.getMenuTarget());
-		if (LingeringClickTooltipsUtil.shouldProcessClick(tooltipText, isHide, isHotkeyPressed, config))
-		{
-			tooltips.add(LingeringClickTooltipsUtil.buildTooltipWrapper(
-				LingeringClickTooltipsUtil.getTooltipTextWithColor(tooltipText, config),
-				LingeringClickTooltipsUtil.getOffsetLocation(inputListener.getLastClickPos(), config),
-				false
-			));
-			if (tooltips.size() > config.maximumTooltipsShown())
-			{
-				tooltipsToFlush.add(tooltips.peek());
-			}
-		}
-	}
-
-	protected void showInfoTooltip(String infoTooltipText)
-	{
-		infoTooltip = LingeringClickTooltipsUtil.buildTooltipWrapper(
-			infoTooltipText,
-			null,
-			true
-		);
-	}
-
-	protected void showToggledHideModeTooltip()
-	{
-		showInfoTooltip(isHide? TOOLTIPS_HIDDEN : TOOLTIPS_SHOWN);
-	}
-
-	public void flushTooltips()
-	{
-		for (LingeringClickTooltipsWrapper tooltip : tooltipsToFlush)
-		{
-			tooltips.remove(tooltip);
-		}
+		queueManager.addTooltip(event.getMenuOption(), event.getMenuTarget());
 	}
 }
