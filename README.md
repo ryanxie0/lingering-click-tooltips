@@ -16,7 +16,7 @@ Offers lots of options to configure tooltip appearance, including duration, fade
 There are many ways to combine the different settings. Hopefully everyone can make use of this feature!<br><br>
 If you would like to request/enhance a feature or if you notice a bug, remember to submit an issue. Read below for update notes!<br>
 
-### Update 1.2 (Jul 31, 2021)
+### Update 1.2 (Aug 2, 2021)
 This update bolsters tooltip filtering, among massive improvements to code and other areas.
 * [ + ] The main feature of this update is the familiar blacklist/whitelist system. For this feature, the SHIFT key was adopted as the main operator.
   * [ + ] A new selector "Filter mode" was added to the "Modes" config section.
