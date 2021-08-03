@@ -73,6 +73,7 @@ public class LingeringClickTooltipsOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
+        stateManager.forceDynamic();
         queueManager.flushTooltips();
         renderInfoTooltip(queueManager.getInfoTooltip(), graphics);
         if (config.tooltipLocation() == FIXED)

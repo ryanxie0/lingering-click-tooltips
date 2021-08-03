@@ -62,6 +62,14 @@ public class LingeringClickTooltipsOverlayStateManager {
         return managedOverlay.getPosition() == OverlayPosition.DYNAMIC;
     }
 
+    public void forceDynamic()
+    {
+        if (isDynamic() && managedOverlay.getPreferredPosition() != null)
+        {
+            setDynamic();
+        }
+    }
+
     public void initialize(LingeringClickTooltipsOverlay overlay)
     {
         managedOverlay = overlay;
