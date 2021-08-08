@@ -69,7 +69,7 @@ public interface LingeringClickTooltipsConfig extends Config
 
 	@ConfigSection(
 		name = "Filter lists",
-		description = "User-managed lists for filtering tooltips",
+		description = "Configure the filter mode behavior",
 		position = 3,
 		closedByDefault = true
 	)
@@ -102,33 +102,41 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "tooltipDuration",
 		name = "Tooltip duration",
-		description = "The duration of the tooltip before it disappears",
+		description = "The duration for which tooltips will render at max opacity",
 		position = 0,
 		section = lifespan
 	)
 	@Units(Units.MILLISECONDS)
 	@Range(min = 1, max = 5000)
-	default int tooltipDuration()
-	{
-		return 1000;
-	}
+	default int tooltipDuration() { return 600;}
 
 	@ConfigItem(
-		keyName = "tooltipFadeout",
-		name = "Tooltip fadeout",
-		description = "Start fading out the tooltip at x% of the remaining duration",
+		keyName = "tooltipFadeIn",
+		name = "Tooltip fade-in",
+		description = "Adds a fade-in period equal to a percentage of tooltip duration, 0 to disable",
 		position = 1,
 		section = lifespan
 	)
 	@Units(Units.PERCENT)
 	@Range(max = 100)
-	default int tooltipFadeout() { return 50; }
+	default int tooltipFadeIn() { return 20; }
+
+	@ConfigItem(
+		keyName = "tooltipFadeout",
+		name = "Tooltip fadeout",
+		description = "Adds a fadeout period equal to a percentage of tooltip duration, 0 to disable",
+		position = 2,
+		section = lifespan
+	)
+	@Units(Units.PERCENT)
+	@Range(max = 100)
+	default int tooltipFadeout() { return 40; }
 
 	@ConfigItem(
 		keyName = "maximumTooltipsShown",
 		name = "Max tooltips shown",
 		description = "The maximum number of tooltips shown at any given time",
-		position = 2,
+		position = 3,
 		section = lifespan
 	)
 	@Range(min = 1)
@@ -137,8 +145,8 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "permanentTooltips",
 		name = "Permanent tooltips",
-		description = "Use tooltips that do not disappear",
-		position = 3,
+		description = "Choose whether to use tooltips that do not disappear",
+		position = 4,
 		section = lifespan
 	)
 	default boolean permanentTooltips() { return false; }
@@ -146,7 +154,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = USE_CUSTOM_TEXT_COLOR,
 		name = "Use custom text color",
-		description = "Choose whether to apply the custom text color below to non-info tooltips",
+		description = "Choose whether to apply the text color below to non-info tooltips",
 		position = 0,
 		section = appearance
 	)
@@ -164,7 +172,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = USE_CUSTOM_BACKGROUND_COLOR,
 		name = "Use custom background color",
-		description = "Choose whether to apply the custom background color below to non-info tooltips",
+		description = "Choose whether to apply the background color below to non-info tooltips",
 		position = 2,
 		section = appearance
 	)
@@ -181,24 +189,24 @@ public interface LingeringClickTooltipsConfig extends Config
 	default Color customBackgroundColor() { return Color.BLACK; }
 
 	@ConfigItem(
-		keyName = "overrideMenuOptionColor",
-		name = "Override menu option color",
-		description = "Choose whether custom text color should override menu option color",
+		keyName = "overrideMenuColors",
+		name = "Override menu colors",
+		description = "Choose whether the custom text color, if enabled, should override menu colors",
 		position = 4,
 		section = appearance
 	)
-	default boolean overrideMenuOptionColor() { return false; }
+	default boolean overrideMenuColors() { return false; }
 
 	@ConfigItem(
-		keyName = "tooltipStartOpacity",
-		name = "Tooltip start opacity",
-		description = "Opacity of tooltips when they first appear",
+		keyName = "maximumOpacity",
+		name = "Max opacity",
+		description = "The maximum opacity of tooltips",
 		position = 5,
 		section = appearance
 	)
 	@Units(Units.PERCENT)
 	@Range(max = 100)
-	default int tooltipStartOpacity() { return 100; }
+	default int maximumOpacity() { return 100; }
 
 	@ConfigItem(
 		keyName = "fastMode",
@@ -212,7 +220,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "lightMode",
 		name = "Light mode",
-		description = "Tooltip fadeout doubled",
+		description = "Max opacity reduced by 25% of its current value",
 		position = 1,
 		section = modes
 	)
@@ -228,10 +236,19 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean trackerMode() { return false; }
 
 	@ConfigItem(
+		keyName = "tickSyncMode",
+		name = "Tick sync mode",
+		description = "Tooltips process at the next game tick instead of immediately",
+		position = 3,
+		section = modes
+	)
+	default boolean tickSyncMode() { return false; }
+
+	@ConfigItem(
 		keyName = "filterMode",
 		name = "Filter mode",
 		description = "Select the mode used for filtering tooltips based on user-managed lists",
-		position = 3,
+		position = 4,
 		section = modes
 	)
 	default LingeringClickTooltipsFilterMode filterMode() { return LingeringClickTooltipsFilterMode.NONE; }
@@ -255,11 +272,38 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "whitelist",
 		name = "Whitelist",
-		description = "ONLY tooltips matching text in this list will show",
+		description = "Tooltips NOT matching text in this list will NOT show",
 		position = 1,
 		section = filterLists
 	)
 	default String whitelist() { return ""; }
+
+	@ConfigItem(
+		keyName = "blockFilteredClicks",
+		name = "Block filtered clicks",
+		description = "Choose whether filtered clicks should be consumed, preventing native client processing",
+		position = 2,
+		section = filterLists
+	)
+	default boolean blockFilteredClicks() { return false; }
+
+	@ConfigItem(
+		keyName = "showBlockedClicks",
+		name = "Show blocked clicks",
+		description = "Choose whether tooltips should appear for consumed clicks",
+		position = 3,
+		section = filterLists
+	)
+	default boolean showBlockedClicks() { return true; }
+
+	@ConfigItem(
+		keyName = "ctrlBypassesBlock",
+		name = "CTRL bypasses block",
+		description = "Choose whether holding CTRL will allow blocked clicks to process",
+		position = 4,
+		section = filterLists
+	)
+	default boolean ctrlBypassesBlock() { return true; }
 
 	@ConfigItem(
 		keyName = "whitelist",
@@ -271,7 +315,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = LingeringClickTooltipsLocation.TOOLTIP_LOCATION_CONFIG_KEY,
 		name = "Tooltip location",
-		description = "Lingering remains at the click point, anchored follows the mouse cursor, custom stays at a fixed location",
+		description = "Lingering remains at the click point, anchored follows the mouse cursor, fixed stays at a static location",
 		position = 0,
 		section = location
 	)
@@ -300,7 +344,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "clampXPadding",
 		name = "Clamp x padding",
-		description = "The minimum distance between tooltip and left/right window border, 0 means no gap",
+		description = "The minimum distance between tooltips and the left/right window borders, 0 means no gap",
 		position = 3,
 		section = location
 	)
@@ -310,7 +354,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "clampYPadding",
 		name = "Clamp y padding",
-		description = "The minimum distance between tooltip and top/bottom window border, 0 means no gap",
+		description = "The minimum distance between tooltips and the top/bottom window borders, 0 means no gap",
 		position = 4,
 		section = location
 	)
@@ -326,7 +370,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	)
 	@Units(Units.MILLISECONDS)
 	@Range(max = 500)
-	default int ctrlDoubleTapDelay() { return 250; }
+	default int ctrlDoubleTapDelay() { return 300; }
 
 	@ConfigItem(
 		keyName = "ctrlTogglesHide",
@@ -346,7 +390,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	)
 	@Units(Units.MILLISECONDS)
 	@Range(max = 600)
-	default int shiftDoubleTapDelay() { return 300; }
+	default int shiftDoubleTapDelay() { return 350; }
 
 	@ConfigItem(
 		keyName = "shiftPeeksFilterListAction",

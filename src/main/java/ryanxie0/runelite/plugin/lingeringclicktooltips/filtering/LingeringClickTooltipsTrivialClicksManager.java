@@ -41,7 +41,6 @@ public class LingeringClickTooltipsTrivialClicksManager {
     private static Set<String> configurableTrivialClicks;
     private static Set<String> defaultTrivialClicks;
     private static Set<String> panelTrivialClicks;
-    private static Set<String> allTrivialClicks;
 
     public void updateFromConfig(String configKey)
     {
@@ -123,17 +122,11 @@ public class LingeringClickTooltipsTrivialClicksManager {
         return configurableTrivialClicks.contains(text);
     }
 
-    public static boolean isHandledByTrivialClicks(String text)
-    {
-        return allTrivialClicks.contains(text);
-    }
-
     public void initialize()
     {
         initializeDefault();
         initializePanelGroup();
         initializeConfigurable();
-        initializeAll();
     }
 
     public void destroy()
@@ -144,8 +137,6 @@ public class LingeringClickTooltipsTrivialClicksManager {
         panelTrivialClicks = null;
         configurableTrivialClicks.clear();
         configurableTrivialClicks = null;
-        allTrivialClicks.clear();
-        allTrivialClicks = null;
     }
 
     private void initializeDefault()
@@ -201,23 +192,5 @@ public class LingeringClickTooltipsTrivialClicksManager {
         modifyConfigurableTrivialClicks(config.hideEat(), EAT);
         modifyConfigurableTrivialClicks(config.hidePuzzles(), MOVE);
         modifyConfigurableTrivialClicks(config.hidePanels(), panelTrivialClicks);
-    }
-
-    private void initializeAll()
-    {
-        allTrivialClicks = new HashSet<>();
-        allTrivialClicks.add(WALK_HERE);
-        allTrivialClicks.add(WALK_HERE_WITH_TARGET);
-        allTrivialClicks.add(WIELD);
-        allTrivialClicks.add(WEAR);
-        allTrivialClicks.add(TOGGLE_RUN);
-        allTrivialClicks.add(ACTIVATE_QUICK_PRAYERS);
-        allTrivialClicks.add(DEACTIVATE_QUICK_PRAYERS);
-        allTrivialClicks.add(SHIFT_DROP);
-        allTrivialClicks.add(USE);
-        allTrivialClicks.add(EAT);
-        allTrivialClicks.add(MOVE);
-        allTrivialClicks.addAll(defaultTrivialClicks);
-        allTrivialClicks.addAll(panelTrivialClicks);
     }
 }

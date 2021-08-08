@@ -23,13 +23,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.components.wrapper;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper;
 
 import lombok.Data;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.components.alpha.AlphaTooltipComponent;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.renderable.alpha.AlphaTooltipComponent;
 
 import java.awt.Point;
 import java.awt.Color;
+import java.time.Duration;
 import java.time.Instant;
 
 @Data
@@ -42,4 +43,5 @@ public class LingeringClickTooltipsWrapper {
     private Instant timeOfCreation;
     private Point location;
     private AlphaTooltipComponent renderableComponent;
+    private Duration tooltipDuration;
 }

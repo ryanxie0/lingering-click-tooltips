@@ -16,6 +16,38 @@ Offers lots of options to configure tooltip appearance, including duration, fade
 There are many ways to combine the different settings. Hopefully everyone can make use of this feature!<br><br>
 If you would like to request/enhance a feature or if you notice a bug, remember to submit an issue. Read below for update notes!<br>
 
+### Update 1.3 (MAJOR COMMIT DATE GOES HERE)
+This update is a mixed bag of new useful features, a small redesign, and a few bug fixes.
+* [ + ] A tooltip fade-in has been added. It is recommended to keep this value relatively low (<25%) as it may cause a noticeable visual delay, which could be undesirable.
+* [ + ] A new "Tick sync mode" has been added under the "Modes" config section. Tooltips will wait until the next game tick to begin showing.
+  * Note that this will decrease your tooltip throughput, as only the most recent click within a game tick gets processed.
+* [ + ] The blacklist/whitelist filter modes can now consume filtered clicks. Consumed clicks will not be passed on to the native client for processing. Config has been added under the "Filter lists" section.
+  * [ + ] New config "Block filtered clicks": Choose whether filtered clicks should be consumed.
+  * [ + ] New config "Show blocked clicks": Choose whether tooltips should appear for consumed clicks.
+  * [ + ] New config "CTRL bypasses block": Choose whether holding CTRL will allow blocked clicks to process.
+  * Users may find this feature awkward to use in conjunction with the whitelist, except for specific cases. When used properly, it can serve to prevent misclicks.
+  * In response to this change, users are now able to blacklist or whitelist any clicks. Previously, trivial clicks were excluded from filter lists.
+    * Trivial clicks will still be barred from showing regardless of their presence in either filter list as long as the corresponding checkbox is still enabled in "Trivial clicks".
+<br><br>
+* [ ! ] Some config names/descriptions have been updated to be more accurate or less wordy.
+  * Notably, "Tooltip start opacity" updated to "Max opacity", in response to the addition of fade-in and the fade redesign.
+* [ ! ] Tooltip fade has been redesigned to prevent tooltip duration from being drowned. Both fadeout and the new fade-in generate additional duration instead of consuming the configured tooltip duration.
+  * For example, if tooltip duration = 500ms, fade-in = 10%, and fadeout = 20%:
+    * A fade-in period equal to 50ms will be added at the beginning of the tooltip duration.
+    * A fadeout period equal to 100ms will be added at the end of the tooltip duration.
+    * This would give a total tooltip duration of 650ms. But, 150ms of that duration are fade periods.
+    * The end result is that the 500ms tooltip duration setting defines the period the tooltip will render at the user-specified max opacity.
+  * Users are recommended to reconfigure their tooltip duration, fade-in, and fadeout to feel more comfortable under the new design.
+    * A good starting point would be tooltip duration = ~600ms, fade-in = ~20%, and fade-out = ~40%.
+* [ ! ] Light mode now reduces tooltip start opacity by 25% in response to the changes to fade.
+  * In other words, if you have tooltip opacity set to 80%, tooltips render as if it were set to 60%.
+<br><br>
+* [ * ] Certain trivial clicks were still being filtered despite having "Hide trivial clicks" set to false.
+  * The config setting "Hide trivial clicks" was being evaluated at the wrong location in the code.
+* [ * ] Tooltips remained hidden even when holding CTRL to toggle hide.
+  * Experimental code was erroneously left in the overlay rendering. It has been removed.
+
+
 ### Update 1.2 (Aug 2, 2021)
 This update bolsters tooltip filtering, among massive improvements to code and other areas.
 * [ + ] The main feature of this update is the familiar blacklist/whitelist system. For this feature, the SHIFT key was adopted as the main operator.
@@ -46,9 +78,10 @@ This update bolsters tooltip filtering, among massive improvements to code and o
 <br><br>
 * [ - ] The "Anchored" checkbox under "Location" has been replaced by the "Tooltip location" selector.
 <br><br>
-* [ ! ] The recently added clamping code restricted non-anchored tooltips to the viewport, which excludes the panel/minimap/chat areas in Fixed mode.
-  * The code now uses canvas dimensions instead of viewport dimensions so that Fixed mode users can see non-anchored tooltips rendered everywhere. Nothing changes for resizable users.
 * [ ! ] Double-tap features have been strengthened by timing out key presses that are too long.
+<br><br>
+* [ * ] The recently added clamping code restricted non-anchored tooltips to the viewport, which excludes the panel/minimap/chat areas in Fixed mode.
+  * The code now uses canvas dimensions instead of viewport dimensions so that Fixed mode users can see non-anchored tooltips rendered everywhere. Nothing changes for resizable users.
 
 ### Update 1.1 (Jul 26, 2021)
 As a reminder to all, please remember to use the double-tap CTRL feature, instead of the RuneLite plugin panel, to quickly toggle tooltips. Read over all the other features this plugin has to offer as well!
@@ -64,7 +97,8 @@ As a reminder to all, please remember to use the double-tap CTRL feature, instea
 * [ ! ] Tooltips now clamp to the viewport. This means that they will automatically adjust their position if they were to render offscreen or cut off.
 * [ ! ] The "Modes" config section has been moved above "Location" and below "Appearance" for easier access.
 * [ ! ] The "Location" and "Hotkey" config sections closed by default to reduce config clutter.
-* [ ! ] Anchored tooltips no longer render if the mouse cursor is not over the game window. They will reappear as normal if the cursor enters the game window.
+<br><br>
+* [ * ] Anchored tooltips no longer render if the mouse cursor is not over the game window. They will reappear as normal if the cursor enters the game window.
 
 ### Release 1.0 (Jul 21, 2021)
 After 5 days of development, the plugin has been released to the plugin hub! Now RuneLite users can finally be assured of their actions the same as mobile users.
@@ -73,3 +107,9 @@ After 5 days of development, the plugin has been released to the plugin hub! Now
 * [ + ] The CTRL key was chosen to be the dedicated hotkey for the plugin. Double-tap CTRL toggles hotkeys, holding CTRL while hotkeys are off shows tooltips normally.
 * [ + ] Trivial clicks such as "Walk here" will not receive a tooltip unless configured to do so.
 * [ + ] A few useful modes have been added to quickly adapt the behavior of the plugin without having to tweak all the various configurations.
+
+Markers and what they indicate:<br>
+[ + ] Addition of a new feature.<br>
+[ - ] Removal of an existing feature.<br>
+[ ! ] A change to a feature, or an important notice to users.<br>
+[ * ] A bug, followed by what caused it and how it was resolved.<br>

@@ -40,16 +40,31 @@ public class LingeringClickTooltipsFiltering {
     /**
      * @param tooltipText the tooltip text to check for processing
      * @param isHide whether the plugin is currently in hide mode, where tooltips do not show
-     * @param isCtrlPressed whether the CTRL key is currently held down, shows tooltips normally during hide mode
+     * @param isCtrlPressed whether the CTRL key is currently held down, may show tooltips normally during hide mode
      * @param config the configuration settings for the plugin
-     * @return whether the click should be handled by the plugin, i.e. render a tooltip
+     * @return whether the click should render a tooltip
      */
-    public static boolean shouldProcessClick(String tooltipText, boolean isHide, boolean isCtrlPressed, LingeringClickTooltipsConfig config)
+    public static boolean shouldRenderTooltip(String tooltipText, boolean isHide, boolean isCtrlPressed, LingeringClickTooltipsConfig config)
     {
         String filterableText = removeTags(tooltipText); // filtering should never include tags
-        return !(isTrivialClick(filterableText, config))
-            && !(isHide && !(isCtrlPressed && config.ctrlTogglesHide()))
-            && !(isFiltered(filterableText, config));
+
+        boolean isTrivialClick = isTrivialClick(filterableText, config);
+        boolean isHideMode = isHideMode(isHide, isCtrlPressed, config.ctrlTogglesHide());
+        boolean isFilteredByList = isFilteredByList(filterableText, config);
+        boolean isBlockedClickTooltip = isBlockedClickTooltip(filterableText);
+
+        return !isHideMode && ((!isTrivialClick && !isFilteredByList) || isBlockedClickTooltip);
+    }
+
+    /**
+     * @param isHide the current hide mode state
+     * @param isCtrlPressed whether the CTRL key is currently pressed
+     * @param ctrlTogglesHide whether the CTRL key can toggle hide mode while pressed
+     * @return whether tooltips are currently hidden
+     */
+    public static boolean isHideMode(boolean isHide, boolean isCtrlPressed, boolean ctrlTogglesHide)
+    {
+        return isHide && !(isCtrlPressed && ctrlTogglesHide);
     }
 
     /**
@@ -57,30 +72,23 @@ public class LingeringClickTooltipsFiltering {
      * @param config the configuration settings for the plugin
      * @return whether tooltipText is a trivial click based on the current config (or a default trivial click)
      */
-    private static boolean isTrivialClick(String tooltipText, LingeringClickTooltipsConfig config)
+    public static boolean isTrivialClick(String tooltipText, LingeringClickTooltipsConfig config)
     {
         if (defaultContains(tooltipText))
         {
             return true;
         }
-        else if (!config.trackerMode())
+        else if (config.hideTrivialClicks() && !config.trackerMode())
         {
-            if (config.hideTrivialClicks() && configurableContains(tooltipText))
+            if (tooltipText.contains(WALK_HERE) && tooltipText.length() > WALK_HERE.length())
             {
-                return true;
+                return configurableContains(WALK_HERE_WITH_TARGET);
             }
-            else if (tooltipText.contains(WALK_HERE) && tooltipText.length() > WALK_HERE.length() && configurableContains(WALK_HERE_WITH_TARGET))
+            else if ((tooltipText.contains(ACTIVATE) || tooltipText.contains(DEACTIVATE)) && !tooltipText.contains(QUICK_PRAYERS))
             {
-                return true;
+                return configurableContains(TOGGLE_PRAYER);
             }
-            else if ((tooltipText.contains(ACTIVATE) || tooltipText.contains(DEACTIVATE)) && !tooltipText.contains(QUICK_PRAYERS) && configurableContains(TOGGLE_PRAYER))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            else return configurableContains(tooltipText);
         }
         else
         {
@@ -93,7 +101,7 @@ public class LingeringClickTooltipsFiltering {
      * @param config the configuration settings for the plugin
      * @return whether tooltipText is filtered based on the current filter mode
      */
-    private static boolean isFiltered(String tooltipText, LingeringClickTooltipsConfig config)
+    public static boolean isFilteredByList(String tooltipText, LingeringClickTooltipsConfig config)
     {
         if (config.filterMode() == BLACKLIST)
         {
@@ -110,9 +118,26 @@ public class LingeringClickTooltipsFiltering {
     }
 
     /**
+     * @param tooltipText text which may contain blocked click keywords
+     * @return whether tooltipText is for a blocked or bypass click
+     */
+    public static boolean isBlockedClickTooltip(String tooltipText)
+    {
+        if (tooltipText.contains(BYPASS) || tooltipText.contains(BLOCKED_BY))
+        {
+            return (tooltipText.contains(BLACKLIST.toString()) || tooltipText.contains(WHITELIST.toString()));
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Updates the appropriate filter list, then indicates the action by returning a String with keywords.
      * @param config the configuration settings for the plugin
-     * @param tooltipText the last tooltip text detected by the plugin, ONLY excludes all available trivial clicks (e.g. not hidden)
-     * @param isPeek whether the method was called via a "peek" action (nothing committed to config)
+     * @param tooltipText the last tooltip text detected by the plugin, including all trivial clicks
+     * @param isPeek whether the method was called from a peek action
      * @return tooltipText prefixed with the appropriate filter list action keywords
      */
     public static String updateFilterLists(LingeringClickTooltipsConfig config, String tooltipText, boolean isPeek)
@@ -138,7 +163,7 @@ public class LingeringClickTooltipsFiltering {
                 infoTooltipText += BLACKLIST + ADD + tooltipText;
             }
 
-            if (!isPeek)
+            if (!isPeek) // peek actions do not commit changes to config
             {
                 config.setBlacklist(listToCsv(blacklist));
             }
@@ -157,7 +182,7 @@ public class LingeringClickTooltipsFiltering {
                 infoTooltipText += WHITELIST + ADD + tooltipText;
             }
 
-            if (!isPeek)
+            if (!isPeek) // peek actions do not commit changes to config
             {
                 config.setWhitelist(listToCsv(whitelist));
             }

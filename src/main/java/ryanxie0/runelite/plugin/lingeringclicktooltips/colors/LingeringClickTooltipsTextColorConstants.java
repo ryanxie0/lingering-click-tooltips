@@ -43,8 +43,8 @@ public class LingeringClickTooltipsTextColorConstants {
     private static final String TRANSPARENT_HEX = "0x00000000"; // fully transparent
     private static final String LIGHT_GREEN_HEX = "0x55ED55"; // lighter and less intense green
     private static final String LIGHT_RED_HEX = "0xED5555"; // lighter and less intense red
-    private static final String DARKER_GRAY_HEX = "0xC8202020"; // between Color.BLACK and Color.DARK_GRAY, alpha = 200
-    private static final String MEDIUM_GRAY_HEX = "0xC8606060"; // between Color.DARK_GRAY AND Color.GRAY, alpha = 200
+    private static final String DARKER_GRAY_HEX = "0xA0202020"; // between Color.BLACK and Color.DARK_GRAY, alpha = 160
+    private static final String MEDIUM_GRAY_HEX = "0xA0606060"; // between Color.DARK_GRAY AND Color.GRAY, alpha = 160
     private static final String LIGHTER_GRAY_HEX = "0xE0E0E0"; // between Color.LIGHT_GRAY and Color.WHITE
 
     // colors derived from hex codes
@@ -77,4 +77,6 @@ public class LingeringClickTooltipsTextColorConstants {
     public static final String LAST_CLICK = "Last click";
     public static final String LAST_CLICK_BACKGROUND_COLOR = LAST_CLICK + BACKGROUND_COLOR;
     public static final String LAST_CLICK_TEXT_COLOR = LAST_CLICK + TEXT_COLOR;
+    public static final String BLOCKED_BY = "Blocked by";
+    public static final String BYPASS = "Bypass";
 }

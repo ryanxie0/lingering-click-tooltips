@@ -23,15 +23,16 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.components.wrapper;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper;
 
 import net.runelite.api.Client;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.components.alpha.AlphaTooltipComponent;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.renderable.alpha.AlphaTooltipComponent;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.time.Duration;
 import java.time.Instant;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsLocation.*;
@@ -45,7 +46,13 @@ public class LingeringClickTooltipsWrapperUtil {
      * @param isInfoTooltip whether the tooltip is an info tooltip, used later for determining adjusted duration, fadeout, permanence bypass, etc.
      * @return the tooltip wrapper which is used to construct a renderable component
      */
-    public static LingeringClickTooltipsWrapper buildTooltipWrapper(String tooltipText, Point location, Color backgroundColor, boolean isInfoTooltip)
+    public static LingeringClickTooltipsWrapper buildTooltipWrapper(
+        String tooltipText,
+        Point location,
+        Color backgroundColor,
+        boolean isInfoTooltip,
+        LingeringClickTooltipsConfig config
+    )
     {
         LingeringClickTooltipsWrapper tooltipWrapper = new LingeringClickTooltipsWrapper();
         tooltipWrapper.setFaded(false);
@@ -55,6 +62,7 @@ public class LingeringClickTooltipsWrapperUtil {
         tooltipWrapper.setBackgroundColor(backgroundColor);
         tooltipWrapper.setTimeOfCreation(Instant.now());
         tooltipWrapper.setLocation(location);
+        tooltipWrapper.setTooltipDuration(calculateTotalTooltipDuration(isInfoTooltip, config));
         return tooltipWrapper;
     }
 
@@ -66,7 +74,7 @@ public class LingeringClickTooltipsWrapperUtil {
      * @param target the menu target selected by the user, e.g. "Door" or "Tree"
      * @return the tooltip text produced by combining the option and the target
      */
-    public static String getTooltipText(String option, String target)
+    public static String getRawTooltipText(String option, String target)
     {
         String tooltipText = option + (target.equals("") || option.equals(target) ? "" : " " + target);
         tooltipText = tooltipText.replaceAll("\\s+$", ""); // trim any trailing whitespace
@@ -74,20 +82,49 @@ public class LingeringClickTooltipsWrapperUtil {
     }
 
     /**
-     * This method returns null for cases where location is not necessary, i.e. tooltips handled by the TooltipManager.
-     * A null location is later used to avoid further unnecessary calculations regarding tooltip location
+     * This method returns null for cases where location is not necessary, e.g. tooltips handled by the TooltipManager.
+     * A null location is later used to avoid further unnecessary calculations regarding tooltip location.
      * @param location the exact location of the click input by the user
      * @param config the configuration settings for the plugin
      * @return location adjusted according to the offsets specified by the user in the config
      */
     public static Point getOffsetLocation(Point location, LingeringClickTooltipsConfig config)
     {
-        if (config.tooltipLocation() == ANCHORED || config.trackerMode()) // no need to calculate location for anchored tooltips
+        if (config.tooltipLocation() == ANCHORED || config.trackerMode() || config.tooltipLocation() == FIXED)
         {
             return null;
         }
         location.translate(config.tooltipXOffset(), config.tooltipYOffset());
         return location;
+    }
+
+    /**
+     * Calculates the total tooltip duration accounting for various different factors.
+     * @param isInfoTooltip whether the tooltip is an info tooltip
+     * @param config the configuration settings for the plugin
+     * @return the total tooltip duration
+     */
+    public static Duration calculateTotalTooltipDuration(boolean isInfoTooltip, LingeringClickTooltipsConfig config)
+    {
+        int totalTooltipDuration = config.tooltipDuration();
+        if (isInfoTooltip)
+        {
+            totalTooltipDuration *= 1.5;
+        }
+        else if (config.fastMode())
+        {
+            totalTooltipDuration /= 2.0;
+        }
+
+        if (config.tooltipFadeIn() > 0)
+        {
+            totalTooltipDuration += totalTooltipDuration * config.tooltipFadeIn() / 100.0;
+        }
+        if (config.tooltipFadeout() > 0)
+        {
+            totalTooltipDuration += totalTooltipDuration * config.tooltipFadeout() / 100.0;
+        }
+        return Duration.ofMillis(totalTooltipDuration);
     }
 
     /**
@@ -147,18 +184,7 @@ public class LingeringClickTooltipsWrapperUtil {
         if (tooltip.getLocation() != null)
         {
             alphaTooltipComponent.setPosition(tooltip.getLocation());
-            alphaTooltipComponent.setPreferredLocation(tooltip.getLocation());
         }
         tooltip.setRenderableComponent(alphaTooltipComponent);
-    }
-
-    /**
-     * Used for refreshing an info tooltip in the case that its text did not change.
-     * @param infoTooltip the info tooltip to refresh
-     */
-    public static void refreshInfoTooltip(LingeringClickTooltipsWrapper infoTooltip)
-    {
-        infoTooltip.setFaded(false);
-        infoTooltip.setTimeOfCreation(Instant.now());
     }
 }

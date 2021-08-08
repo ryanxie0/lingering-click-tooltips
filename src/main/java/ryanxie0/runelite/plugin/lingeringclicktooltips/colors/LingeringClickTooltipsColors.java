@@ -36,14 +36,11 @@ import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.Lingerin
 public class LingeringClickTooltipsColors {
 
     /**
-     * This method applies the custom text color from the configuration that is selected by the user. Normally,
-     * the text defaults to white without the need for a tag, but the tag is necessary for later use in case
-     * the tooltip text is prefixed with text containing separate color tags of their own, e.g. during filter list actions.
-     * @param tooltipText the tooltip text to which custom text color will be applied via tags
-     * @param overrideMenuOptionColor whether the native client menu option colors should be overridden
-     * @return tooltipText with appropriate color tags applied, a default white color tag is applied if none are available
+     * @param tooltipText the tooltip text to which custom text color will be applied
+     * @param overrideMenuColors whether the native client menu colors should be overridden
+     * @return tooltipText with appropriate color tags, if applicable
      */
-    public static String applyCustomTextColor(String tooltipText, boolean overrideMenuOptionColor)
+    public static String applyCustomTextColor(String tooltipText, boolean overrideMenuColors)
     {
         String tooltipTextColor = getColorTag(Color.WHITE); // defaults to white
 
@@ -51,7 +48,7 @@ public class LingeringClickTooltipsColors {
         if (customTextColor != null)
         {
             tooltipTextColor = getColorTag(customTextColor);
-            if (overrideMenuOptionColor)
+            if (overrideMenuColors)
             {
                 tooltipText = removeTags(tooltipText);
             }
@@ -60,9 +57,41 @@ public class LingeringClickTooltipsColors {
     }
 
     /**
-     * @param infoTooltipText the info tooltip text to which color will be applied via tags
-     * @param isPeek whether the method was called via a peek action, used for filter list actions
-     * @return infoTooltipText, appropriate formatting and color tags applied if applicable
+     * @param blockedClickText text containing blocked click keywords, e.g. BLOCKED_BY + BLACKLIST
+     * @return the keywords in blockedClickText with proper formatting and color tags applied
+     */
+    public static String getBlockedClickTextWithColor(String blockedClickText)
+    {
+        String blockedClickTextWithColor = "";
+        if (blockedClickText.contains(BYPASS))
+        {
+            blockedClickText = blockedClickText.substring(BYPASS.length());
+            blockedClickTextWithColor += getColorTag(BYPASS) + BYPASS + " ";
+        }
+        else if (blockedClickText.contains(BLOCKED_BY))
+        {
+            blockedClickText = blockedClickText.substring(BLOCKED_BY.length());
+            blockedClickTextWithColor += getColorTag(BLOCKED_BY) + BLOCKED_BY + " ";
+        }
+
+        if (blockedClickText.contains(BLACKLIST.toString()))
+        {
+            blockedClickTextWithColor += getColorTag(BLACKLIST_TEXT_COLOR) + BLACKLIST;
+        }
+        else if (blockedClickText.contains(WHITELIST.toString()))
+        {
+            blockedClickTextWithColor += getColorTag(WHITELIST_TEXT_COLOR) + WHITELIST;
+        }
+
+        blockedClickTextWithColor += getColorTag(Color.WHITE) + ": ";
+
+        return blockedClickTextWithColor;
+    }
+
+    /**
+     * @param infoTooltipText the info tooltip text to which color will be applied
+     * @param isPeek whether the method was called from a peek action, used for filter list actions
+     * @return infoTooltipText with appropriate formatting and color tags, if applicable
      */
     public static String applyInfoTooltipTextColor(String infoTooltipText, boolean isPeek)
     {
@@ -110,7 +139,7 @@ public class LingeringClickTooltipsColors {
 
     /**
      * @param tooltipText the tooltip text from which filter list actions will be extracted
-     * @param isPeek whether the method was called via a "peek" action (nothing committed to config)
+     * @param isPeek whether the method was called from a peek action
      * @return tooltipText prefixed with the filter list action, formatting and color tags applied, empty string if N/A
      */
     private static String getFilterListActionTooltipTextWithColor(String tooltipText, boolean isPeek)
@@ -164,8 +193,8 @@ public class LingeringClickTooltipsColors {
     }
 
     /**
-     * There are several sources of background color, this method picks one appropriate background color
-     * from all the available sources. Defaults to the overlay background color specified under the RuneLite settings.
+     * Returns the appropriate background color from all the available sources. Defaults to the overlay background
+     * color specified under the RuneLite settings.
      * @param tooltipText the tooltip text which may map to a pre-designated background color
      * @return the background color as selected by the logic
      */

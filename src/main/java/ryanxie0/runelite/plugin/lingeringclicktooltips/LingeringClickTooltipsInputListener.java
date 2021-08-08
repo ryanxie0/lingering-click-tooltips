@@ -66,85 +66,66 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
     private Instant lastShiftPressTime;
 
     @Override
-    public MouseEvent mousePressed(MouseEvent e)
+    public MouseEvent mousePressed(MouseEvent event)
     {
-        return processMousePressed(e);
-    }
-
-    @Override
-    public MouseEvent mouseEntered(MouseEvent e)
-    {
-        return processMouseEntered(e);
-    }
-
-    @Override
-    public MouseEvent mouseExited(MouseEvent e)
-    {
-        return processMouseExited(e);
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e)
-    {
-        processKeyPressed(e);
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e)
-    {
-        processKeyReleased(e);
-    }
-
-    @Override
-    public void keyTyped(KeyEvent e)
-    {
-        processKeyTyped(e);
-    }
-
-    protected MouseEvent processMousePressed(MouseEvent e)
-    {
-        if (e.getButton() == MouseEvent.BUTTON1)
+        if (event.getButton() == MouseEvent.BUTTON1)
         {
-            lastClickPoint = e.getPoint();
+            lastClickPoint = event.getPoint();
         }
-        return e;
+        return event;
     }
 
-    protected MouseEvent processMouseEntered(MouseEvent e)
+    @Override
+    public MouseEvent mouseEntered(MouseEvent event)
     {
         isMouseOverCanvas = true;
-        return e;
+        return event;
     }
 
-    protected MouseEvent processMouseExited(MouseEvent e)
+    @Override
+    public MouseEvent mouseExited(MouseEvent event)
     {
         isMouseOverCanvas = false;
-        return e;
+        return event;
     }
 
-    protected void processKeyPressed(KeyEvent e)
+    @Override
+    public void keyPressed(KeyEvent event)
     {
-        if (e.getKeyCode() == KeyEvent.VK_CONTROL)
+        if (event.getKeyCode() == KeyEvent.VK_CONTROL)
         {
-            processCtrlPressed(e);
+            processCtrlPressed(event);
         }
-        else if (e.getKeyCode() == KeyEvent.VK_SHIFT)
+        else if (event.getKeyCode() == KeyEvent.VK_SHIFT)
         {
-            processShiftPressed(e);
+            processShiftPressed(event);
         }
     }
 
-    protected void processKeyTyped(KeyEvent e)
+    @Override
+    public void keyReleased(KeyEvent event)
+    {
+        if (event.getKeyCode() == KeyEvent.VK_CONTROL)
+        {
+            processCtrlReleased(event);
+        }
+        else if (event.getKeyCode() == KeyEvent.VK_SHIFT)
+        {
+            processShiftReleased(event);
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent event)
     {
 
     }
 
     /**
-     * Processes CTRL being pressed. The CTRL double-tap to toggle tooltips is implemented by tracking the last time
-     * the CTRL key was pressed and comparing it to the double-tap delay in the config. lastCtrlPressTime reflects the
-     * moment the CTRL key was pressed, and does NOT continuously update as the CTRL key is held down.
+     * Processes CTRL being pressed. Manages double-tap CTRL to toggle hide.
+     * @param event the KeyEvent from a CTRL press
      */
-    private void processCtrlPressed(KeyEvent e)
+    private void processCtrlPressed(KeyEvent event)
     {
         if (!isCtrlPressed)
         {
@@ -164,13 +145,10 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
     }
 
     /**
-     * Processes SHIFT being pressed. The SHIFT double-tap to update the filter lists is implemented by tracking
-     * the last time the SHIFT key was pressed and comparing it to the double-tap delay in the config. lastCtrlPressTime
-     * reflects the moment the SHIFT key was pressed, and does NOT continuously update as the SHIFT key is held down.
-     * This is so that holding the SHIFT key (for longer than the SHIFT double-tap delay) to peek filter list actions
-     * will accurately track the duration the SHIFT key is held for. The peek tooltip shows as long as SHIFT is held down.
+     * Processes SHIFT being pressed. Manages double-tap SHIFT to update filter lists and hold SHIFT to peek.
+     * @param event the KeyEvent from a SHIFT press, consumed to avoid SHIFT-drop conflicts
      */
-    private void processShiftPressed(KeyEvent e)
+    private void processShiftPressed(KeyEvent event)
     {
         if (isCtrlPressed)
         {
@@ -199,27 +177,15 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
                     }
                 }
             }
-            e.consume(); // consume to avoid conflict with SHIFT-drop
-        }
-    }
-
-    protected void processKeyReleased(KeyEvent e)
-    {
-        if (e.getKeyCode() == KeyEvent.VK_CONTROL)
-        {
-            processCtrlReleased(e);
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_SHIFT)
-        {
-            processShiftReleased(e);
+            event.consume(); // consume to avoid conflict with SHIFT-drop
         }
     }
 
     /**
-     * Processes CTRL being released. If CTRL was held down for too long (>CTRL double-tap delay), the lastCtrlPressTime
-     * is nulled, effectively timing out taps that are too long. This enforces a stronger double-tap behavior.
+     * Processes CTRL being released. Manages the strong double-tap behavior by timing out long keypresses.
+     * @param event the KeyEvent from a CTRL release
      */
-    private void processCtrlReleased(KeyEvent e)
+    private void processCtrlReleased(KeyEvent event)
     {
         if (isCtrlPressed && config.ctrlDoubleTapDelay() > 0)
         {
@@ -232,10 +198,10 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
     }
 
     /**
-     * Processes SHIFT being released. If SHIFT was held down for too long (>SHIFT double-tap delay), the lastShiftPressTime
-     * is nulled, effectively timing out taps that are too long. This enforces a stronger double-tap behavior.
+     * Processes SHIFT being released. Manages the strong double-tap behavior by timing out long keypresses.
+     * @param event the KeyEvent from a SHIFT release
      */
-    private void processShiftReleased(KeyEvent e)
+    private void processShiftReleased(KeyEvent event)
     {
         if (isCtrlPressed)
         {

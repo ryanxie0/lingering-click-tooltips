@@ -27,7 +27,8 @@ package ryanxie0.runelite.plugin.lingeringclicktooltips;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.components.wrapper.LingeringClickTooltipsWrapper;
+import lombok.Setter;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper.LingeringClickTooltipsWrapper;
 import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,23 +36,30 @@ import java.util.Queue;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsColors.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.components.wrapper.LingeringClickTooltipsWrapperUtil.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.fade.LingeringClickTooltipsFade.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringUtil.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper.LingeringClickTooltipsWrapperUtil.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFiltering.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksManager.*;
 
 public class LingeringClickTooltipsQueueManager {
 
     @Inject
     private LingeringClickTooltipsConfig config;
 
-    @Getter(AccessLevel.PUBLIC)
+    @Getter(AccessLevel.PACKAGE)
     private Queue<LingeringClickTooltipsWrapper> tooltips;
 
-    @Getter(AccessLevel.PUBLIC)
+    @Getter(AccessLevel.PACKAGE)
     private LingeringClickTooltipsWrapper fixedLocationTooltip;
 
-    @Getter(AccessLevel.PUBLIC)
+    @Getter(AccessLevel.PACKAGE)
     private LingeringClickTooltipsWrapper infoTooltip;
+
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PACKAGE)
+    private boolean consumeEvent;
+
+    private LingeringClickTooltipsWrapper tickSyncTooltip;
 
     private LingeringClickTooltipsInputListener inputListener;
 
@@ -63,56 +71,120 @@ public class LingeringClickTooltipsQueueManager {
     private List<LingeringClickTooltipsWrapper> tooltipsToFlush;
 
     /**
-     * Called each time the user selects a menu option. The most recent tooltip text is tracked by lastTooltipText
-     * unless the action is already handled by the trivial click system. Here, config.maximumTooltipsShown is enforced
-     * by flushing excess tooltips from the front of the queue.
+     * Creates a new tooltip from a click. Builds the raw tooltip text, applies color tags, checks for
+     * blocked/bypass clicks, then sets the currently rendered tooltip.
      * @param menuOption the menu option selected by the user
      * @param menuTarget the menu target selected by the user
      */
-    public void addTooltip(String menuOption, String menuTarget)
+    public void createNewTooltip(String menuOption, String menuTarget)
     {
-        String tooltipText = getTooltipText(menuOption, menuTarget);
-        String tooltipTextWithCustomColor = applyCustomTextColor(tooltipText, config.overrideMenuOptionColor());
-        lastTooltipText = isHandledByTrivialClicks(tooltipText)? lastTooltipText : tooltipTextWithCustomColor;
-        if (shouldProcessClick(tooltipText, inputListener.isHide(), inputListener.isCtrlPressed(), config))
+        String rawTooltipText = getRawTooltipText(menuOption, menuTarget);
+        String tooltipText = applyCustomTextColor(rawTooltipText, config.overrideMenuColors());
+        lastTooltipText = tooltipText;
+        tooltipText = getBlockedClickText(tooltipText) + tooltipText;
+        setRenderedTooltip(tooltipText);
+    }
+
+    /**
+     * @param tooltipText the text which may be blocked by a filter list
+     * @return text indicating a block/bypass, proper formatting and color tags applied
+     */
+    private String getBlockedClickText(String tooltipText)
+    {
+        String blockedClickText = "";
+        if (config.blockFilteredClicks() && isFilteredByList(removeTags(tooltipText), config))
         {
-            if (config.tooltipLocation() == LingeringClickTooltipsLocation.FIXED)
+            if (config.ctrlBypassesBlock() && inputListener.isCtrlPressed() && config.showBlockedClicks())
             {
-                fixedLocationTooltip = buildTooltipWrapper(
-                    tooltipTextWithCustomColor,
-                    null,
-                    getTooltipBackgroundColor(tooltipTextWithCustomColor),
-                    false
-                );
+                blockedClickText = getBlockedClickTextWithColor(BYPASS + config.filterMode());
             }
             else
             {
-                tooltips.add(buildTooltipWrapper(
-                    tooltipTextWithCustomColor,
-                    getOffsetLocation(inputListener.getLastClickPoint(), config),
-                    getTooltipBackgroundColor(tooltipTextWithCustomColor),
-                    false
-                ));
-                if (tooltips.size() > config.maximumTooltipsShown())
+                consumeEvent = true;
+                if (config.showBlockedClicks())
                 {
-                    tooltipsToFlush.add(tooltips.peek());
+                    blockedClickText = getBlockedClickTextWithColor(BLOCKED_BY + config.filterMode());
                 }
             }
-            lastUnfilteredTooltipText = tooltipTextWithCustomColor;
+        }
+        return blockedClickText;
+    }
+
+    /**
+     * Builds a tooltip using tooltipText, then assigns the tooltip to the currently rendered variable.
+     * @param tooltipText the tooltip text that will be rendered
+     */
+    private void setRenderedTooltip(String tooltipText)
+    {
+        if (shouldRenderTooltip(tooltipText, inputListener.isHide(), inputListener.isCtrlPressed(), config))
+        {
+            LingeringClickTooltipsWrapper tooltip = buildTooltipWrapper(
+                tooltipText,
+                getOffsetLocation(inputListener.getLastClickPoint(), config),
+                getTooltipBackgroundColor(tooltipText),
+                false,
+                config
+            );
+            if (config.tickSyncMode())
+            {
+                tickSyncTooltip = tooltip;
+            }
+            else if (config.tooltipLocation() == LingeringClickTooltipsLocation.FIXED)
+            {
+                fixedLocationTooltip = tooltip;
+            }
+            else
+            {
+                addTooltip(tooltip);
+            }
+            lastUnfilteredTooltipText = tooltipText;
         }
     }
 
     /**
-     * Creates a new info tooltip, which will begin rendering at the next render cycle. If the info tooltip text did
-     * not change, we can simply refresh the tooltip by setting isFaded to true and timeOfCreation to now instead of
-     * reconstructing a new tooltip from scratch. This is possible because infoTooltip never gets flushed.
+     * Adds a tooltip wrapper to the queue. If doing so were to increase the queue size beyond maximumTooltipsShown,
+     * adds the head of the queue to flush.
+     * @param tooltip the tooltip wrapper to add to the queue
+     */
+    private void addTooltip(LingeringClickTooltipsWrapper tooltip)
+    {
+        tooltips.add(tooltip);
+        if (tooltips.size() > config.maximumTooltipsShown())
+        {
+            tooltipsToFlush.add(tooltips.peek());
+        }
+    }
+
+    /**
+     * Assigns tickSyncTooltip to the appropriate variable, then consumes it. Called on each game tick.
+     */
+    public void processTick()
+    {
+        if (config.tickSyncMode() && tickSyncTooltip != null)
+        {
+            refreshTooltipTimeOfCreation(tickSyncTooltip);
+            if (config.tooltipLocation() == LingeringClickTooltipsLocation.FIXED)
+            {
+                fixedLocationTooltip = tickSyncTooltip;
+            }
+            else
+            {
+                addTooltip(tickSyncTooltip);
+            }
+            tickSyncTooltip = null;
+        }
+    }
+
+    /**
+     * Creates a new info tooltip, which will begin rendering at the next render cycle. If the text did not change,
+     * infoTooltip is refreshed instead.
      * @param infoTooltipText the text of the info tooltip, contains color tags
      */
     private void createNewInfoTooltip(String infoTooltipText)
     {
         if (lastInfoTooltipText != null && !lastInfoTooltipText.isEmpty() && infoTooltipText.equals(lastInfoTooltipText))
         {
-            refreshInfoTooltip(infoTooltip);
+            refreshInfoTooltip(infoTooltip, config);
         }
         else
         {
@@ -120,7 +192,8 @@ public class LingeringClickTooltipsQueueManager {
                 infoTooltipText,
                 null,
                 getTooltipBackgroundColor(infoTooltipText),
-                true
+                true,
+                config
             );
             lastInfoTooltipText = infoTooltipText;
         }
@@ -139,8 +212,8 @@ public class LingeringClickTooltipsQueueManager {
     }
 
     /**
-     * Creates an info tooltip regarding a filter list update. If no filter list action is detected (no keywords such as
-     * BLACKLIST + ADD), indicates to the user that no filter mode is enabled.
+     * Creates an info tooltip regarding a filter list update. If no filter list action is detected, indicates to
+     * the user that no filter mode is enabled.
      */
     public void createFilterListUpdateInfoTooltip()
     {
@@ -153,8 +226,8 @@ public class LingeringClickTooltipsQueueManager {
     }
 
     /**
-     * Creates an info tooltip peeking a relevant action. If no filter list action is detected (no keywords such as
-     * BLACKLIST + ADD), creates a peek info tooltip containing the last unfiltered action.
+     * Creates an info tooltip peeking a relevant action. If no filter list action is detected, creates a peek info
+     * tooltip containing the last unfiltered action.
      */
     public void createPeekInfoTooltip()
     {
@@ -172,7 +245,7 @@ public class LingeringClickTooltipsQueueManager {
     }
 
     /**
-     * Any tooltip that needs to be flushed is collected in a list in order to avoid concurrent modification.
+     * Adds a tooltip to tooltipsToFlush.
      * @param tooltip the tooltip to flush
      */
     public void addTooltipToFlush(LingeringClickTooltipsWrapper tooltip)
@@ -200,22 +273,32 @@ public class LingeringClickTooltipsQueueManager {
 
     public void destroy()
     {
+        inputListener = null;
+
         tooltips.clear();
         tooltips = null;
+
         tooltipsToFlush.clear();
         tooltipsToFlush = null;
+
         fixedLocationTooltip = null;
+
         infoTooltip = null;
+
         lastTooltipText = null;
         lastUnfilteredTooltipText = null;
         lastInfoTooltipText = null;
-        inputListener = null;
     }
 
     public void clear()
     {
         tooltips.clear();
         tooltipsToFlush.clear();
+
         fixedLocationTooltip = null;
+
+        lastTooltipText = null;
+        lastUnfilteredTooltipText = null;
+        lastInfoTooltipText = null;
     }
 }

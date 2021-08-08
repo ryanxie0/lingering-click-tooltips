@@ -56,7 +56,7 @@ public class LingeringClickTooltipsTextColorManager {
                 modifyTextToColorMap(config.useCustomTextColor(), CUSTOM_TEXT_COLOR, config.customTextColor());
                 break;
             case OVERLAY_BACKGROUND_COLOR:
-                modifyTextToColorMap(OVERLAY_BACKGROUND_COLOR, runeLiteConfig.overlayBackgroundColor());
+                modifyTextToColorMap(true, OVERLAY_BACKGROUND_COLOR, runeLiteConfig.overlayBackgroundColor());
             default:
                 break;
         }
@@ -72,11 +72,6 @@ public class LingeringClickTooltipsTextColorManager {
         {
             textToColorMap.remove(text);
         }
-    }
-
-    private void modifyTextToColorMap(String text, Color color)
-    {
-        textToColorMap.put(text, color);
     }
 
     public static Color getColor(String text)
@@ -112,10 +107,12 @@ public class LingeringClickTooltipsTextColorManager {
         textToColorMap.put(NO_FILTER_MODE_ENABLED_TEXT_COLOR, LIGHT_RED);
         textToColorMap.put(LAST_CLICK_BACKGROUND_COLOR, TRANSPARENT);
         textToColorMap.put(LAST_CLICK_TEXT_COLOR, LIGHTER_GRAY);
+        textToColorMap.put(BLOCKED_BY, LIGHT_RED);
+        textToColorMap.put(BYPASS, LIGHT_GREEN);
 
         modifyTextToColorMap(config.useCustomBackgroundColor(), CUSTOM_BACKGROUND_COLOR, config.customBackgroundColor());
         modifyTextToColorMap(config.useCustomTextColor(), CUSTOM_TEXT_COLOR, config.customTextColor());
 
-        modifyTextToColorMap(OVERLAY_BACKGROUND_COLOR, runeLiteConfig.overlayBackgroundColor());
+        modifyTextToColorMap(true, OVERLAY_BACKGROUND_COLOR, runeLiteConfig.overlayBackgroundColor());
     }
 }

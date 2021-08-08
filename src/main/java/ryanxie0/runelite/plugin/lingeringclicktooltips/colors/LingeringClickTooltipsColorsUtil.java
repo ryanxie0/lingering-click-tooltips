@@ -41,8 +41,8 @@ public class LingeringClickTooltipsColorsUtil {
     }
 
     /**
-     * If this method receives text which maps to no color, returns an empty string
-     * @param mappedText the text which is mapped to a color via LingeringClickTooltipsTextToColorMapper
+     * If this method receives text which maps to no color, returns an empty string.
+     * @param mappedText the text which is mapped to a color using LingeringClickTooltipsTextToColorMapper.java
      * @return the color text tag generated for mappedText
      */
     public static String getColorTag(String mappedText)
@@ -61,9 +61,9 @@ public class LingeringClickTooltipsColorsUtil {
     }
 
     /**
-     * Can handle both opaque colors and colors with alpha.
-     * @param hex the hex value to convert to a Color
-     * @return the hex value converted to a Color
+     * Generates a Color from a hex string. Accepts both opaque colors and colors with alpha.
+     * @param hex the hex string to convert to a Color, may be prefixed with "#" or "0x".
+     * @return the Color converted from hex
      */
     public static Color hexToColor(String hex)
     {

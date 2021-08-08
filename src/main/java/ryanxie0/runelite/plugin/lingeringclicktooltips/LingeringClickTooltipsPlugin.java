@@ -26,6 +26,7 @@
 package ryanxie0.runelite.plugin.lingeringclicktooltips;
 
 import com.google.inject.Provides;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
@@ -38,6 +39,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorManager;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksManager;
+
 import javax.inject.Inject;
 
 @PluginDescriptor(
@@ -123,7 +125,7 @@ public class LingeringClickTooltipsPlugin extends Plugin
 		if (!event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_LOCATION)
 			&& !event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_POSITION))
 		{
-			queueManager.clear(); // not called when the user is moving the custom tooltip location
+			queueManager.clear(); // not called when the user is moving the fixed tooltip location
 		}
 		if (event.getGroup().equals(LingeringClickTooltipsConfig.GROUP_NAME))
 		{
@@ -140,6 +142,17 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		queueManager.addTooltip(event.getMenuOption(), event.getMenuTarget());
+		queueManager.createNewTooltip(event.getMenuOption(), event.getMenuTarget());
+		if (queueManager.isConsumeEvent())
+		{
+			event.consume();
+			queueManager.setConsumeEvent(false);
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick tick)
+	{
+		queueManager.processTick();
 	}
 }
