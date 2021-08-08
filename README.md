@@ -16,7 +16,7 @@ Offers lots of options to configure tooltip appearance, including duration, fade
 There are many ways to combine the different settings. Hopefully everyone can make use of this feature!<br><br>
 If you would like to request/enhance a feature or if you notice a bug, remember to submit an issue. Read below for update notes!<br>
 
-### Update 1.3 (MAJOR COMMIT DATE GOES HERE)
+### Update 1.3 (Aug 7, 2021)
 This update is a mixed bag of new useful features, a small redesign, and a few bug fixes.
 * [ + ] A tooltip fade-in has been added. It is recommended to keep this value relatively low (<25%) as it may cause a noticeable visual delay, which could be undesirable.
 * [ + ] A new "Tick sync mode" has been added under the "Modes" config section. Tooltips will wait until the next game tick to begin showing.
