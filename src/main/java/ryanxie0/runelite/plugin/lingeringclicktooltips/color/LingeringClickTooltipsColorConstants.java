@@ -23,14 +23,14 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.colors;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.color;
 
 import java.awt.Color;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsColorsUtil.hexToColor;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorUtil.hexToColor;
 
-public class LingeringClickTooltipsTextColorConstants {
+public class LingeringClickTooltipsColorConstants {
 
     // config key names
     public static final String OVERLAY_BACKGROUND_COLOR = "overlayBackgroundColor";
@@ -45,7 +45,7 @@ public class LingeringClickTooltipsTextColorConstants {
     private static final String LIGHT_RED_HEX = "0xED5555"; // lighter and less intense red
     private static final String DARKER_GRAY_HEX = "0xA0202020"; // between Color.BLACK and Color.DARK_GRAY, alpha = 160
     private static final String MEDIUM_GRAY_HEX = "0xA0606060"; // between Color.DARK_GRAY AND Color.GRAY, alpha = 160
-    private static final String LIGHTER_GRAY_HEX = "0xE0E0E0"; // between Color.LIGHT_GRAY and Color.WHITE
+    private static final String LIGHTER_GRAY_HEX = "0xD0D0D0"; // between Color.LIGHT_GRAY and Color.WHITE
 
     // colors derived from hex codes
     public static final Color TRANSPARENT = hexToColor(TRANSPARENT_HEX);
@@ -79,4 +79,6 @@ public class LingeringClickTooltipsTextColorConstants {
     public static final String LAST_CLICK_TEXT_COLOR = LAST_CLICK + TEXT_COLOR;
     public static final String BLOCKED_BY = "Blocked by";
     public static final String BYPASS = "Bypass";
+    public static final String SHIFT = "SHIFT";
+    public static final String BLOCKED_BY_SHIFT_BACKGROUND_COLOR = BLOCKED_BY + SHIFT + BACKGROUND_COLOR;
 }

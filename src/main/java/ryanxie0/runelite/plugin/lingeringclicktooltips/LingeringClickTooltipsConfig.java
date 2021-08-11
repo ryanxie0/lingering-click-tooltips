@@ -36,8 +36,8 @@ import ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickT
 
 import java.awt.Color;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringConstants.*;
 
 @ConfigGroup(LingeringClickTooltipsConfig.GROUP_NAME)
 public interface LingeringClickTooltipsConfig extends Config
@@ -254,7 +254,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	default LingeringClickTooltipsFilterMode filterMode() { return LingeringClickTooltipsFilterMode.NONE; }
 
 	@ConfigItem(
-		keyName = "blacklist",
+		keyName = BLACKLIST_CSV,
 		name = "Blacklist",
 		description = "Tooltips matching text in this list will NOT show",
 		position = 0,
@@ -263,20 +263,27 @@ public interface LingeringClickTooltipsConfig extends Config
 	default String blacklist() { return ""; }
 
 	@ConfigItem(
-		keyName = "blacklist",
+		keyName = BLACKLIST_CSV,
 		name = "",
 		description = ""
 	)
 	void setBlacklist(String key);
 
 	@ConfigItem(
-		keyName = "whitelist",
+		keyName = WHITELIST_CSV,
 		name = "Whitelist",
 		description = "Tooltips NOT matching text in this list will NOT show",
 		position = 1,
 		section = filterLists
 	)
 	default String whitelist() { return ""; }
+
+	@ConfigItem(
+		keyName = WHITELIST_CSV,
+		name = "",
+		description = ""
+	)
+	void setWhitelist(String key);
 
 	@ConfigItem(
 		keyName = "blockFilteredClicks",
@@ -290,27 +297,11 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "showBlockedClicks",
 		name = "Show blocked clicks",
-		description = "Choose whether tooltips should appear for consumed clicks",
+		description = "Choose whether tooltips appear for consumed clicks",
 		position = 3,
 		section = filterLists
 	)
 	default boolean showBlockedClicks() { return true; }
-
-	@ConfigItem(
-		keyName = "ctrlBypassesBlock",
-		name = "CTRL bypasses block",
-		description = "Choose whether holding CTRL will allow blocked clicks to process",
-		position = 4,
-		section = filterLists
-	)
-	default boolean ctrlBypassesBlock() { return true; }
-
-	@ConfigItem(
-		keyName = "whitelist",
-		name = "",
-		description = ""
-	)
-	void setWhitelist(String key);
 
 	@ConfigItem(
 		keyName = LingeringClickTooltipsLocation.TOOLTIP_LOCATION_CONFIG_KEY,
@@ -382,24 +373,42 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean ctrlTogglesHide() { return true; }
 
 	@ConfigItem(
+		keyName = "ctrlBypassesBlock",
+		name = "CTRL bypasses block",
+		description = "Choose whether holding CTRL will allow blocked clicks to process",
+		position = 2,
+		section = hotkeys
+	)
+	default boolean ctrlBypassesBlock() { return true; }
+
+	@ConfigItem(
 		keyName = "shiftDoubleTapDelay",
 		name = "SHIFT double-tap delay",
-		description = "Double-tap delay for SHIFT to black/whitelist tooltips, must be holding CTRL, 0 to disable",
+		description = "Double-tap delay for SHIFT to blacklist/whitelist tooltips, must be holding CTRL, 0 to disable",
 		position = 3,
 		section = hotkeys
 	)
 	@Units(Units.MILLISECONDS)
-	@Range(max = 600)
+	@Range(max = 500)
 	default int shiftDoubleTapDelay() { return 350; }
 
 	@ConfigItem(
-		keyName = "shiftPeeksFilterListAction",
-		name = "SHIFT peek",
-		description = "Choose whether holding SHIFT for more than SHIFT double-tap delay peeks filter list actions, must be holding CTRL",
+		keyName = "shiftPeeks",
+		name = "SHIFT peeks",
+		description = "Choose whether holding SHIFT for more than SHIFT double-tap delay produces peek tooltips, must be holding CTRL",
 		position = 4,
 		section = hotkeys
 	)
-	default boolean shiftPeeksFilterListAction() { return true; }
+	default boolean shiftPeeks() { return true; }
+
+	@ConfigItem(
+		keyName = "shiftBlocks",
+		name = "SHIFT blocks",
+		description = "Choose whether clicks should be consumed while holding SHIFT, must have filter mode set to blacklist/whitelist",
+		position = 5,
+		section = hotkeys
+	)
+	default boolean shiftBlocks() { return true; }
 
 	@ConfigItem(
 		keyName = HIDE_TRIVIAL_CLICKS,
@@ -456,6 +465,15 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideToggleRun() { return true; }
 
 	@ConfigItem(
+			keyName = HIDE_SPECIAL_ATTACK,
+			name = "Special attack",
+			description = "Choose whether using special attack should be hidden",
+			position = 7,
+			section = trivialClicks
+	)
+	default boolean hideSpecialAttack() { return true; }
+
+	@ConfigItem(
 		keyName = HIDE_QUICK_PRAYERS,
 		name = "Quick-prayers",
 		description = "Choose whether toggle quick-prayers should be hidden",
@@ -465,56 +483,20 @@ public interface LingeringClickTooltipsConfig extends Config
 	default boolean hideQuickPrayers() { return true; }
 
 	@ConfigItem(
-		keyName = HIDE_PRAYERS,
-		name = "Prayers",
+		keyName = HIDE_PANEL_PRAYERS,
+		name = "Panel prayers",
 		description = "Choose whether toggling prayers from the prayer panel should be hidden",
-		position = 7,
-		section = trivialClicks
-	)
-	default boolean hidePrayers() { return true; }
-
-	@ConfigItem(
-		keyName = HIDE_SHIFT_DROP,
-		name = "Shift drop",
-		description = "Choose whether shift drop should be hidden",
 		position = 8,
 		section = trivialClicks
 	)
-	default boolean hideShiftDrop() { return true; }
+	default boolean hidePanelPrayers() { return true; }
 
 	@ConfigItem(
-		keyName = HIDE_USE_INITIATE,
-		name = "Use",
-		description = "Choose whether use initiate (not from menu) should be hidden",
+		keyName = HIDE_PANELS_GROUP,
+		name = "Panels (group)",
+		description = "Choose whether most clicks on panels should be hidden",
 		position = 9,
 		section = trivialClicks
 	)
-	default boolean hideUseInitiate() { return true; }
-
-	@ConfigItem(
-		keyName = HIDE_EAT,
-		name = "Eat",
-		description = "Choose whether eat (not from menu) should be hidden",
-		position = 10,
-		section = trivialClicks
-	)
-	default boolean hideEat() { return true; }
-
-	@ConfigItem(
-		keyName = HIDE_PUZZLES,
-		name = "Puzzles",
-		description = "Choose whether puzzles should be hidden",
-		position = 11,
-		section = trivialClicks
-	)
-	default boolean hidePuzzles() { return true; }
-
-	@ConfigItem(
-		keyName = HIDE_PANELS,
-		name = "Panels (group)",
-		description = "Choose whether most clicks on panels should be hidden",
-		position = 12,
-		section = trivialClicks
-	)
-	default boolean hidePanels() { return true; }
+	default boolean hidePanelsGroup() { return true; }
 }

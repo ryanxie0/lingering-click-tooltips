@@ -111,7 +111,7 @@ public class LingeringClickTooltipsOverlay extends Overlay
         }
         else if (config.permanentTooltips() || config.trackerMode())
         {
-            alphaModifier = getTooltipStartOpacity(config);
+            alphaModifier = getMaximumOpacity(config);
         }
         else
         {
@@ -147,7 +147,7 @@ public class LingeringClickTooltipsOverlay extends Overlay
                 double alphaModifier;
                 if (config.permanentTooltips() || config.trackerMode())
                 {
-                    alphaModifier = getTooltipStartOpacity(config) * queuePosition / tooltips.size();
+                    alphaModifier = getMaximumOpacity(config) * queuePosition / tooltips.size();
                 }
                 else
                 {

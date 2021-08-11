@@ -23,13 +23,13 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.colors;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.color;
 
 import java.awt.Color;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorManager.getColor;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsTextColorManager.getColor;
 
-public class LingeringClickTooltipsColorsUtil {
+public class LingeringClickTooltipsColorUtil {
 
     /**
      * @param color the color for which a text tag will be obtained, e.g. <col=ffffff> for Color.WHITE

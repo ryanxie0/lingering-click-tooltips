@@ -29,7 +29,7 @@ import net.runelite.client.util.Text;
 
 import java.util.List;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode.*;
 
 public class LingeringClickTooltipsFilteringUtil {

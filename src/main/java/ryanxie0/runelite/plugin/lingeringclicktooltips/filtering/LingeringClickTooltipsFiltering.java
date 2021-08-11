@@ -26,13 +26,13 @@
 package ryanxie0.runelite.plugin.lingeringclicktooltips.filtering;
 
 import ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringUtil.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringConstants.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksManager.*;
 
 public class LingeringClickTooltipsFiltering {
@@ -48,12 +48,13 @@ public class LingeringClickTooltipsFiltering {
     {
         String filterableText = removeTags(tooltipText); // filtering should never include tags
 
-        boolean isTrivialClick = isTrivialClick(filterableText, config);
         boolean isHideMode = isHideMode(isHide, isCtrlPressed, config.ctrlTogglesHide());
+        boolean isTrivialClick = isTrivialClick(filterableText, config);
         boolean isFilteredByList = isFilteredByList(filterableText, config);
         boolean isBlockedClickTooltip = isBlockedClickTooltip(filterableText);
+        boolean isHiddenBlockedClickTooltip = isBlockedClickTooltip && !config.showBlockedClicks();
 
-        return !isHideMode && ((!isTrivialClick && !isFilteredByList) || isBlockedClickTooltip);
+        return !isHideMode && !isTrivialClick && !(isFilteredByList && !isBlockedClickTooltip) && !isHiddenBlockedClickTooltip;
     }
 
     /**
@@ -86,7 +87,7 @@ public class LingeringClickTooltipsFiltering {
             }
             else if ((tooltipText.contains(ACTIVATE) || tooltipText.contains(DEACTIVATE)) && !tooltipText.contains(QUICK_PRAYERS))
             {
-                return configurableContains(TOGGLE_PRAYER);
+                return configurableContains(TOGGLE_PANEL_PRAYER);
             }
             else return configurableContains(tooltipText);
         }
@@ -105,11 +106,13 @@ public class LingeringClickTooltipsFiltering {
     {
         if (config.filterMode() == BLACKLIST)
         {
-            return config.blacklist().contains(tooltipText);
+            List<String> blacklist = csvToList(config.blacklist());
+            return blacklist.contains(tooltipText);
         }
         else if (config.filterMode() == WHITELIST)
         {
-            return !config.whitelist().contains(tooltipText);
+            List<String> whitelist = csvToList(config.whitelist());
+            return !whitelist.contains(tooltipText);
         }
         else
         {
@@ -123,14 +126,8 @@ public class LingeringClickTooltipsFiltering {
      */
     public static boolean isBlockedClickTooltip(String tooltipText)
     {
-        if (tooltipText.contains(BYPASS) || tooltipText.contains(BLOCKED_BY))
-        {
-            return (tooltipText.contains(BLACKLIST.toString()) || tooltipText.contains(WHITELIST.toString()));
-        }
-        else
-        {
-            return false;
-        }
+        return (tooltipText.contains(BYPASS) || tooltipText.contains(BLOCKED_BY))
+            && (tooltipText.contains(BLACKLIST.toString()) || tooltipText.contains(WHITELIST.toString()) || tooltipText.contains(SHIFT));
     }
 
     /**
@@ -151,7 +148,7 @@ public class LingeringClickTooltipsFiltering {
         String filterableText = removeTags(tooltipText);
         if (filterMode == BLACKLIST)
         {
-            List<String> blacklist = new ArrayList<>(csvToList(config.blacklist()));
+            List<String> blacklist = new LinkedList<>(csvToList(config.blacklist()));
             if (blacklist.contains(filterableText))
             {
                 blacklist.remove(filterableText);
@@ -170,7 +167,7 @@ public class LingeringClickTooltipsFiltering {
         }
         else if (filterMode == WHITELIST)
         {
-            List<String> whitelist = new ArrayList<>(csvToList(config.whitelist()));
+            List<String> whitelist = new LinkedList<>(csvToList(config.whitelist()));
             if (whitelist.contains(filterableText))
             {
                 whitelist.remove(filterableText);

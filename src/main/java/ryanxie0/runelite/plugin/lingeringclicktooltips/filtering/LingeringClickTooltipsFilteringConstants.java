@@ -25,7 +25,7 @@
  */
 package ryanxie0.runelite.plugin.lingeringclicktooltips.filtering;
 
-public class LingeringClickTooltipsTrivialClicksConstants {
+public class LingeringClickTooltipsFilteringConstants {
 
     // config key names
     public static final String HIDE_TRIVIAL_CLICKS = "hideTrivialClicks";
@@ -34,13 +34,12 @@ public class LingeringClickTooltipsTrivialClicksConstants {
     public static final String HIDE_WIELD = "hideWield";
     public static final String HIDE_WEAR = "hideWear";
     public static final String HIDE_TOGGLE_RUN = "hideToggleRun";
+    public static final String HIDE_SPECIAL_ATTACK = "hideSpecialAttack";
     public static final String HIDE_QUICK_PRAYERS = "hideQuickPrayers";
-    public static final String HIDE_PRAYERS = "hidePrayers";
-    public static final String HIDE_SHIFT_DROP = "hideShiftDrop";
-    public static final String HIDE_USE_INITIATE = "hideUseInitiate";
-    public static final String HIDE_EAT = "hideEat";
-    public static final String HIDE_PUZZLES = "hidePuzzles";
-    public static final String HIDE_PANELS = "hidePanels";
+    public static final String HIDE_PANEL_PRAYERS = "hidePanelPrayers";
+    public static final String HIDE_PANELS_GROUP = "hidePanelsGroup";
+    public static final String WHITELIST_CSV = "whitelist";
+    public static final String BLACKLIST_CSV = "blacklist";
 
     // default trivial clicks
     public static final String CANCEL = "Cancel";
@@ -50,6 +49,10 @@ public class LingeringClickTooltipsTrivialClicksConstants {
     public static final String CLOSE = "Close";
     public static final String WORLD_SWITCHER = "World Switcher";
     public static final String SELECT = "Select";
+    public static final String SHIFT_DROP = "Drop";
+    public static final String USE_INITIATE = "Use";
+    public static final String EAT = "Eat";
+    public static final String MOVE = "Move";
 
     // panel trivial clicks group
     public static final String COMBAT_OPTIONS = "Combat Options";
@@ -79,14 +82,11 @@ public class LingeringClickTooltipsTrivialClicksConstants {
     public static final String WIELD = "Wield";
     public static final String WEAR = "Wear";
     public static final String TOGGLE_RUN = "Toggle Run";
+    public static final String USE_SPECIAL_ATTACK = "Use Special Attack";
     public static final String ACTIVATE = "Activate";
     public static final String DEACTIVATE = "Deactivate";
     public static final String QUICK_PRAYERS = "Quick-prayers";
     public static final String ACTIVATE_QUICK_PRAYERS = ACTIVATE + " " + QUICK_PRAYERS;
     public static final String DEACTIVATE_QUICK_PRAYERS = DEACTIVATE + " " + QUICK_PRAYERS;
-    public static final String TOGGLE_PRAYER = ACTIVATE + DEACTIVATE + "[PRAYER]"; // special case placeholder, does not match text
-    public static final String SHIFT_DROP = "Drop";
-    public static final String USE = "Use";
-    public static final String EAT = "Eat";
-    public static final String MOVE = "Move";
+    public static final String TOGGLE_PANEL_PRAYER = ACTIVATE + DEACTIVATE + "[PRAYER]"; // special case placeholder, does not match text
 }

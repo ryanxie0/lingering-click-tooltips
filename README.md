@@ -16,6 +16,22 @@ Offers lots of options to configure tooltip appearance, including duration, fade
 There are many ways to combine the different settings. Hopefully everyone can make use of this feature!<br><br>
 If you would like to request/enhance a feature or if you notice a bug, remember to submit an issue. Read below for update notes!<br>
 
+####Patch 1.3.1 (Aug 11, 2021)
+* [ + ] New config "SHIFT blocks" added to "Hotkeys": Choose whether clicks should be consumed while holding SHIFT, must have filter mode set to blacklist/whitelist.
+  * This allows users to peek a filter list action without the native client processing clicks.
+  * Note that this activates the moment SHIFT is pressed, rather than waiting for the double-tap delay period like peeking.
+* [ + ] New trivial click "Special attack": Choose whether using special attack should be hidden.
+<br><br>
+* [ ! ] Config "CTRL bypasses block" has been moved from "Filter lists" to "Hotkeys".
+* [ ! ] Trivial clicks "SHIFT drop", "Use initiate", "Eat", and "Puzzles" have been moved to blocked by default.
+<br><br>
+* [ * ] Certain inputs were evaluating incorrectly on startup, causing unexpected behavior until the inputs were used.
+  * User inputs controlling plugin behavior, such as CTRL or SHIFT, now initialize to corrected values.
+* [ * ] Filter lists used insufficient logic for checking texts. This resulted in text being filtered despite the list not containing a perfect match.
+  * The filter lists are now converted to collections of unique text before checking for matches, which allows the code to correctly identify perfect matches.
+* [ * ] After updating a filter list, data tracking filter list tooltips cleared, which caused certain functions like peeking to no longer work until a new click is input by the user.
+  * To prevent this, relevant data no longer clears after a filter list is updated.
+
 ### Update 1.3 (Aug 7, 2021)
 This update is a mixed bag of new useful features, a small redesign, and a few bug fixes.
 * [ + ] A tooltip fade-in has been added. It is recommended to keep this value relatively low (<25%) as it may cause a noticeable visual delay, which could be undesirable.

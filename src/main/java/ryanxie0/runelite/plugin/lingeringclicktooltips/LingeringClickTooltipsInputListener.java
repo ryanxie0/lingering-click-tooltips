@@ -171,7 +171,7 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
                 if (lastShiftPressTime != null && config.shiftDoubleTapDelay() > 0
                     && Duration.between(lastShiftPressTime, Instant.now()).compareTo(Duration.ofMillis(config.shiftDoubleTapDelay())) > 0)
                 {
-                    if (config.shiftPeeksFilterListAction())
+                    if (config.shiftPeeks())
                     {
                         queueManager.createPeekInfoTooltip();
                     }
@@ -195,6 +195,7 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
             }
         }
         isCtrlPressed = false;
+        isShiftPressed = false;
     }
 
     /**
@@ -212,13 +213,17 @@ public class LingeringClickTooltipsInputListener extends MouseAdapter implements
                     lastShiftPressTime = null; // we want to time out presses that are too long to enforce a strong double-tap behavior
                 }
             }
-            isShiftPressed = false;
         }
+        isShiftPressed = false;
     }
 
     public void initialize(LingeringClickTooltipsQueueManager queueManager)
     {
         this.queueManager = queueManager;
+        isCtrlPressed = false;
+        isShiftPressed = false;
+        isMouseOverCanvas = true;
+        isHide = false;
     }
 
     public void destroy()

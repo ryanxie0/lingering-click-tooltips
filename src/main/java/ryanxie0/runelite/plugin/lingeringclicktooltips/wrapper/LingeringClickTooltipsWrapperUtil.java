@@ -36,6 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsLocation.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.fade.LingeringClickTooltipsFadeConstants.*;
 
 public class LingeringClickTooltipsWrapperUtil {
 
@@ -109,11 +110,11 @@ public class LingeringClickTooltipsWrapperUtil {
         int totalTooltipDuration = config.tooltipDuration();
         if (isInfoTooltip)
         {
-            totalTooltipDuration *= 1.5;
+            totalTooltipDuration *= INFO_TOOLTIP_MULTIPLIER;
         }
         else if (config.fastMode())
         {
-            totalTooltipDuration /= 2.0;
+            totalTooltipDuration /= FAST_MODE_MULTIPLIER;
         }
 
         if (config.tooltipFadeIn() > 0)

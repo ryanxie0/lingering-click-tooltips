@@ -31,7 +31,7 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Set;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringConstants.*;
 
 public class LingeringClickTooltipsTrivialClicksManager {
 
@@ -61,27 +61,18 @@ public class LingeringClickTooltipsTrivialClicksManager {
             case HIDE_TOGGLE_RUN:
                 modifyConfigurableTrivialClicks(config.hideToggleRun(), TOGGLE_RUN);
                 break;
+            case HIDE_SPECIAL_ATTACK:
+                modifyConfigurableTrivialClicks(config.hideSpecialAttack(), USE_SPECIAL_ATTACK);
+                break;
             case HIDE_QUICK_PRAYERS:
                 modifyConfigurableTrivialClicks(config.hideQuickPrayers(), ACTIVATE_QUICK_PRAYERS);
                 modifyConfigurableTrivialClicks(config.hideQuickPrayers(), DEACTIVATE_QUICK_PRAYERS);
                 break;
-            case HIDE_PRAYERS:
-                modifyConfigurableTrivialClicks(config.hidePrayers(), TOGGLE_PRAYER);
+            case HIDE_PANEL_PRAYERS:
+                modifyConfigurableTrivialClicks(config.hidePanelPrayers(), TOGGLE_PANEL_PRAYER);
                 break;
-            case HIDE_SHIFT_DROP:
-                modifyConfigurableTrivialClicks(config.hideShiftDrop(), SHIFT_DROP);
-                break;
-            case HIDE_USE_INITIATE:
-                modifyConfigurableTrivialClicks(config.hideUseInitiate(), USE);
-                break;
-            case HIDE_EAT:
-                modifyConfigurableTrivialClicks(config.hideEat(), EAT);
-                break;
-            case HIDE_PUZZLES:
-                modifyConfigurableTrivialClicks(config.hidePuzzles(), MOVE);
-                break;
-            case HIDE_PANELS:
-                modifyConfigurableTrivialClicks(config.hidePanels(), panelTrivialClicks);
+            case HIDE_PANELS_GROUP:
+                modifyConfigurableTrivialClicks(config.hidePanelsGroup(), panelTrivialClicks);
                 break;
             default:
                 break;
@@ -149,6 +140,10 @@ public class LingeringClickTooltipsTrivialClicksManager {
         defaultTrivialClicks.add(CLOSE);
         defaultTrivialClicks.add(WORLD_SWITCHER);
         defaultTrivialClicks.add(SELECT);
+        defaultTrivialClicks.add(SHIFT_DROP);
+        defaultTrivialClicks.add(USE_INITIATE);
+        defaultTrivialClicks.add(EAT);
+        defaultTrivialClicks.add(MOVE);
     }
 
     private void initializePanelGroup()
@@ -186,11 +181,7 @@ public class LingeringClickTooltipsTrivialClicksManager {
         modifyConfigurableTrivialClicks(config.hideToggleRun(), TOGGLE_RUN);
         modifyConfigurableTrivialClicks(config.hideQuickPrayers(), ACTIVATE_QUICK_PRAYERS);
         modifyConfigurableTrivialClicks(config.hideQuickPrayers(), DEACTIVATE_QUICK_PRAYERS);
-        modifyConfigurableTrivialClicks(config.hidePrayers(), TOGGLE_PRAYER);
-        modifyConfigurableTrivialClicks(config.hideShiftDrop(), SHIFT_DROP);
-        modifyConfigurableTrivialClicks(config.hideUseInitiate(), USE);
-        modifyConfigurableTrivialClicks(config.hideEat(), EAT);
-        modifyConfigurableTrivialClicks(config.hidePuzzles(), MOVE);
-        modifyConfigurableTrivialClicks(config.hidePanels(), panelTrivialClicks);
+        modifyConfigurableTrivialClicks(config.hidePanelPrayers(), TOGGLE_PANEL_PRAYER);
+        modifyConfigurableTrivialClicks(config.hidePanelsGroup(), panelTrivialClicks);
     }
 }

@@ -37,7 +37,7 @@ import net.runelite.client.input.MouseManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
-import ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorManager;
+import ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsTextColorManager;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsTrivialClicksManager;
 
 import javax.inject.Inject;
@@ -45,7 +45,7 @@ import javax.inject.Inject;
 @PluginDescriptor(
 	name = "Lingering Click Tooltips",
 	description = "Generate configurable tooltips with left click mouse actions",
-	tags = {"overlay","tooltip","text","hover","click","action","toast"}
+	tags = {"overlay","tooltip","text","hover","click","action","toast","filter"}
 )
 public class LingeringClickTooltipsPlugin extends Plugin
 {
@@ -122,16 +122,12 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_LOCATION)
-			&& !event.getKey().equals(LingeringClickTooltipsConfig.OVERLAY_PREFERRED_POSITION))
-		{
-			queueManager.clear(); // not called when the user is moving the fixed tooltip location
-		}
 		if (event.getGroup().equals(LingeringClickTooltipsConfig.GROUP_NAME))
 		{
 			trivialClicksManager.updateFromConfig(event.getKey());
 			textColorManager.updateFromConfig(event.getKey());
 			overlay.updateFromConfig(event.getKey());
+			queueManager.clear(event.getKey());
 		}
 		else if (event.getGroup().equals(runeLiteConfig.GROUP_NAME))
 		{
@@ -142,12 +138,7 @@ public class LingeringClickTooltipsPlugin extends Plugin
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
-		queueManager.createNewTooltip(event.getMenuOption(), event.getMenuTarget());
-		if (queueManager.isConsumeEvent())
-		{
-			event.consume();
-			queueManager.setConsumeEvent(false);
-		}
+		queueManager.createNewTooltip(event);
 	}
 
 	@Subscribe

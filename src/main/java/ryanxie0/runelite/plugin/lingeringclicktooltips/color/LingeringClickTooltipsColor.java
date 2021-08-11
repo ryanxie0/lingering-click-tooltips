@@ -23,17 +23,17 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.colors;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.color;
 
 import java.awt.Color;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorManager.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsColorsUtil.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsTextColorManager.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorUtil.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringUtil.*;
 
-public class LingeringClickTooltipsColors {
+public class LingeringClickTooltipsColor {
 
     /**
      * @param tooltipText the tooltip text to which custom text color will be applied
@@ -58,11 +58,12 @@ public class LingeringClickTooltipsColors {
 
     /**
      * @param blockedClickText text containing blocked click keywords, e.g. BLOCKED_BY + BLACKLIST
-     * @return the keywords in blockedClickText with proper formatting and color tags applied
+     * @return the keywords in blockedClickText with proper formatting and color tags applied, empty string if N/A
      */
     public static String getBlockedClickTextWithColor(String blockedClickText)
     {
         String blockedClickTextWithColor = "";
+
         if (blockedClickText.contains(BYPASS))
         {
             blockedClickText = blockedClickText.substring(BYPASS.length());
@@ -82,8 +83,15 @@ public class LingeringClickTooltipsColors {
         {
             blockedClickTextWithColor += getColorTag(WHITELIST_TEXT_COLOR) + WHITELIST;
         }
+        else if (blockedClickText.contains(SHIFT))
+        {
+            blockedClickTextWithColor += getColorTag(SHIFT) + SHIFT;
+        }
 
-        blockedClickTextWithColor += getColorTag(Color.WHITE) + ": ";
+        if (!blockedClickText.isEmpty())
+        {
+            blockedClickTextWithColor += getColorTag(Color.WHITE) + ": ";
+        }
 
         return blockedClickTextWithColor;
     }
@@ -202,16 +210,10 @@ public class LingeringClickTooltipsColors {
     {
         tooltipText = removeTags(tooltipText); // color mappings should not include text color tags, only in scope
 
-        Color filterListActionBackgroundColor = getFilterListActionBackgroundColor(tooltipText);
-        if (filterListActionBackgroundColor != null)
+        Color specialBackgroundColor = getSpecialBackgroundColor(tooltipText);
+        if (specialBackgroundColor != null)
         {
-            return filterListActionBackgroundColor;
-        }
-
-        Color peekLastClickBackgroundColor = getPeekLastClickBackgroundColor(tooltipText);
-        if (peekLastClickBackgroundColor != null)
-        {
-            return peekLastClickBackgroundColor;
+            return specialBackgroundColor;
         }
 
         Color textMappedBackgroundColor = getColor(tooltipText);
@@ -230,10 +232,11 @@ public class LingeringClickTooltipsColors {
     }
 
     /**
-     * @param tooltipText the tooltip text which may contain filter list action keywords
-     * @return the background color matching the filter mode, returns null if N/A
+     * Maps tooltip text to a special background color.
+     * @param tooltipText text which may map to a special background color
+     * @return tooltipText mapped to a special background color, null if N/A
      */
-    private static Color getFilterListActionBackgroundColor(String tooltipText)
+    private static Color getSpecialBackgroundColor(String tooltipText)
     {
         String filterListAction = extractFilterListAction(tooltipText);
         if (filterListAction.contains(BLACKLIST.toString()))
@@ -248,19 +251,17 @@ public class LingeringClickTooltipsColors {
         {
             return getColor(NO_FILTER_MODE_ENABLED_BACKGROUND_COLOR);
         }
-        return null;
-    }
 
-    /**
-     * @param tooltipText the tooltip text which may contain a peek last click action
-     * @return the background color for peek last click action, returns null if N/A
-     */
-    private static Color getPeekLastClickBackgroundColor(String tooltipText)
-    {
         if (tooltipText.contains(LAST_CLICK))
         {
             return getColor(LAST_CLICK_BACKGROUND_COLOR);
         }
+
+        if (tooltipText.contains(BLOCKED_BY) && tooltipText.contains(SHIFT))
+        {
+            return getColor(BLOCKED_BY_SHIFT_BACKGROUND_COLOR);
+        }
+
         return null;
     }
 }

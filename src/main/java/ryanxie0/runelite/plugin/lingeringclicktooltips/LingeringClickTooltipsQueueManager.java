@@ -27,19 +27,22 @@ package ryanxie0.runelite.plugin.lingeringclicktooltips;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import net.runelite.api.events.MenuOptionClicked;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper.LingeringClickTooltipsWrapper;
 import javax.inject.Inject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsColors.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColor.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.fade.LingeringClickTooltipsFade.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilterMode.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringConstants.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFilteringUtil.*;
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper.LingeringClickTooltipsWrapperUtil.*;
 import static ryanxie0.runelite.plugin.lingeringclicktooltips.filtering.LingeringClickTooltipsFiltering.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.wrapper.LingeringClickTooltipsWrapperUtil.*;
 
 public class LingeringClickTooltipsQueueManager {
 
@@ -55,59 +58,64 @@ public class LingeringClickTooltipsQueueManager {
     @Getter(AccessLevel.PACKAGE)
     private LingeringClickTooltipsWrapper infoTooltip;
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
-    private boolean consumeEvent;
-
     private LingeringClickTooltipsWrapper tickSyncTooltip;
+
+    private List<LingeringClickTooltipsWrapper> tooltipsToFlush;
 
     private LingeringClickTooltipsInputListener inputListener;
 
     @Getter(AccessLevel.PACKAGE)
     private String lastUnfilteredTooltipText; // used for peeking while no filter mode is enabled
-    private String lastTooltipText; // used for managing filter lists
-    private String lastInfoTooltipText; // used for optimizing info tooltips
 
-    private List<LingeringClickTooltipsWrapper> tooltipsToFlush;
+    private String lastTooltipText; // used for managing filter lists
+
+    private String lastInfoTooltipText; // used for optimizing info tooltips
 
     /**
      * Creates a new tooltip from a click. Builds the raw tooltip text, applies color tags, checks for
      * blocked/bypass clicks, then sets the currently rendered tooltip.
-     * @param menuOption the menu option selected by the user
-     * @param menuTarget the menu target selected by the user
+     * @param event the event fired when the user left clicks
      */
-    public void createNewTooltip(String menuOption, String menuTarget)
+    public void createNewTooltip(MenuOptionClicked event)
     {
-        String rawTooltipText = getRawTooltipText(menuOption, menuTarget);
+        String rawTooltipText = getRawTooltipText(event.getMenuOption(), event.getMenuTarget());
         String tooltipText = applyCustomTextColor(rawTooltipText, config.overrideMenuColors());
         lastTooltipText = tooltipText;
-        tooltipText = getBlockedClickText(tooltipText) + tooltipText;
+        tooltipText = getBlockedClickText(tooltipText, event) + tooltipText;
         setRenderedTooltip(tooltipText);
     }
 
     /**
+     * Gets the text for a blocked click and consumes the MenuOptionClicked event, if applicable.
      * @param tooltipText the text which may be blocked by a filter list
-     * @return text indicating a block/bypass, proper formatting and color tags applied
+     * @param event the event fired when the user left clicks
+     * @return text indicating a block/bypass, proper formatting and color tags applied, empty string if N/A
      */
-    private String getBlockedClickText(String tooltipText)
+    private String getBlockedClickText(String tooltipText, MenuOptionClicked event)
     {
         String blockedClickText = "";
-        if (config.blockFilteredClicks() && isFilteredByList(removeTags(tooltipText), config))
+        if (config.filterMode() == NONE)
         {
-            if (config.ctrlBypassesBlock() && inputListener.isCtrlPressed() && config.showBlockedClicks())
+            return blockedClickText;
+        }
+        else if (config.shiftBlocks() && inputListener.isShiftPressed())
+        {
+            event.consume();
+            blockedClickText = BLOCKED_BY + SHIFT;
+        }
+        else if (config.blockFilteredClicks() && isFilteredByList(removeTags(tooltipText), config))
+        {
+            if (config.ctrlBypassesBlock() && inputListener.isCtrlPressed())
             {
-                blockedClickText = getBlockedClickTextWithColor(BYPASS + config.filterMode());
+                blockedClickText = BYPASS + config.filterMode();
             }
             else
             {
-                consumeEvent = true;
-                if (config.showBlockedClicks())
-                {
-                    blockedClickText = getBlockedClickTextWithColor(BLOCKED_BY + config.filterMode());
-                }
+                event.consume();
+                blockedClickText = BLOCKED_BY + config.filterMode();
             }
         }
-        return blockedClickText;
+        return getBlockedClickTextWithColor(blockedClickText);
     }
 
     /**
@@ -182,7 +190,7 @@ public class LingeringClickTooltipsQueueManager {
      */
     private void createNewInfoTooltip(String infoTooltipText)
     {
-        if (lastInfoTooltipText != null && !lastInfoTooltipText.isEmpty() && infoTooltipText.equals(lastInfoTooltipText))
+        if (lastInfoTooltipText != null && !lastInfoTooltipText.isEmpty() && removeTags(infoTooltipText).equals(removeTags(lastInfoTooltipText)))
         {
             refreshInfoTooltip(infoTooltip, config);
         }
@@ -290,15 +298,20 @@ public class LingeringClickTooltipsQueueManager {
         lastInfoTooltipText = null;
     }
 
-    public void clear()
+    public void clear(String configKey)
     {
-        tooltips.clear();
-        tooltipsToFlush.clear();
+        if (!configKey.equals(OVERLAY_PREFERRED_LOCATION) && !configKey.equals(OVERLAY_PREFERRED_POSITION))
+        {
+            tooltips.clear();
+            tooltipsToFlush.clear();
+            fixedLocationTooltip = null;
+        }
 
-        fixedLocationTooltip = null;
-
-        lastTooltipText = null;
-        lastUnfilteredTooltipText = null;
-        lastInfoTooltipText = null;
+        if (!configKey.equals(BLACKLIST_CSV) && !configKey.equals(WHITELIST_CSV))
+        {
+            lastTooltipText = null;
+            lastUnfilteredTooltipText = null;
+            lastInfoTooltipText = null;
+        }
     }
 }

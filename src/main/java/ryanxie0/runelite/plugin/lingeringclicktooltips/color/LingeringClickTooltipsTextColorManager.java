@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package ryanxie0.runelite.plugin.lingeringclicktooltips.colors;
+package ryanxie0.runelite.plugin.lingeringclicktooltips.color;
 
 import net.runelite.client.config.RuneLiteConfig;
 import ryanxie0.runelite.plugin.lingeringclicktooltips.LingeringClickTooltipsConfig;
@@ -33,7 +33,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
-import static ryanxie0.runelite.plugin.lingeringclicktooltips.colors.LingeringClickTooltipsTextColorConstants.*;
+import static ryanxie0.runelite.plugin.lingeringclicktooltips.color.LingeringClickTooltipsColorConstants.*;
 
 public class LingeringClickTooltipsTextColorManager {
 
@@ -57,6 +57,7 @@ public class LingeringClickTooltipsTextColorManager {
                 break;
             case OVERLAY_BACKGROUND_COLOR:
                 modifyTextToColorMap(true, OVERLAY_BACKGROUND_COLOR, runeLiteConfig.overlayBackgroundColor());
+                break;
             default:
                 break;
         }
@@ -109,6 +110,8 @@ public class LingeringClickTooltipsTextColorManager {
         textToColorMap.put(LAST_CLICK_TEXT_COLOR, LIGHTER_GRAY);
         textToColorMap.put(BLOCKED_BY, LIGHT_RED);
         textToColorMap.put(BYPASS, LIGHT_GREEN);
+        textToColorMap.put(SHIFT, LIGHTER_GRAY);
+        textToColorMap.put(BLOCKED_BY_SHIFT_BACKGROUND_COLOR, TRANSPARENT);
 
         modifyTextToColorMap(config.useCustomBackgroundColor(), CUSTOM_BACKGROUND_COLOR, config.customBackgroundColor());
         modifyTextToColorMap(config.useCustomTextColor(), CUSTOM_TEXT_COLOR, config.customTextColor());
