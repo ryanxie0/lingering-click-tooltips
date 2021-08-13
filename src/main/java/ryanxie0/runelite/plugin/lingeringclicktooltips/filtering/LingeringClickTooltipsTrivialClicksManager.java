@@ -179,6 +179,7 @@ public class LingeringClickTooltipsTrivialClicksManager {
         modifyConfigurableTrivialClicks(config.hideWield(), WIELD);
         modifyConfigurableTrivialClicks(config.hideWear(), WEAR);
         modifyConfigurableTrivialClicks(config.hideToggleRun(), TOGGLE_RUN);
+        modifyConfigurableTrivialClicks(config.hideSpecialAttack(), USE_SPECIAL_ATTACK);
         modifyConfigurableTrivialClicks(config.hideQuickPrayers(), ACTIVATE_QUICK_PRAYERS);
         modifyConfigurableTrivialClicks(config.hideQuickPrayers(), DEACTIVATE_QUICK_PRAYERS);
         modifyConfigurableTrivialClicks(config.hidePanelPrayers(), TOGGLE_PANEL_PRAYER);
