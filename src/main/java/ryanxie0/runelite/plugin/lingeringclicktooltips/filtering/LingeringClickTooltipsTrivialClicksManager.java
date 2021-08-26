@@ -79,7 +79,7 @@ public class LingeringClickTooltipsTrivialClicksManager {
         }
     }
 
-    private void modifyConfigurableTrivialClicks(boolean configEnabled, String text)
+    private static void modifyConfigurableTrivialClicks(boolean configEnabled, String text)
     {
         if (configEnabled)
         {
@@ -91,7 +91,7 @@ public class LingeringClickTooltipsTrivialClicksManager {
         }
     }
 
-    private void modifyConfigurableTrivialClicks(boolean configEnabled, Set<String> textGroup)
+    private static void modifyConfigurableTrivialClicks(boolean configEnabled, Set<String> textGroup)
     {
         if (configEnabled)
         {
@@ -143,7 +143,7 @@ public class LingeringClickTooltipsTrivialClicksManager {
         defaultTrivialClicks.add(SHIFT_DROP);
         defaultTrivialClicks.add(USE_INITIATE);
         defaultTrivialClicks.add(EAT);
-        defaultTrivialClicks.add(MOVE);
+        defaultTrivialClicks.add(MOVE_SLIDING_PIECE);
     }
 
     private void initializePanelGroup()

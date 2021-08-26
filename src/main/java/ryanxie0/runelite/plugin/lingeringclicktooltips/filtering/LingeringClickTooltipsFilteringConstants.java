@@ -52,7 +52,7 @@ public class LingeringClickTooltipsFilteringConstants {
     public static final String SHIFT_DROP = "Drop";
     public static final String USE_INITIATE = "Use";
     public static final String EAT = "Eat";
-    public static final String MOVE = "Move";
+    public static final String MOVE_SLIDING_PIECE = "Move Sliding piece";
 
     // panel trivial clicks group
     public static final String COMBAT_OPTIONS = "Combat Options";

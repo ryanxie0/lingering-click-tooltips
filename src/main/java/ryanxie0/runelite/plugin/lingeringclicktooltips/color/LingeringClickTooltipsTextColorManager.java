@@ -50,9 +50,11 @@ public class LingeringClickTooltipsTextColorManager {
         switch (configKey)
         {
             case USE_CUSTOM_BACKGROUND_COLOR:
+            case CUSTOM_BACKGROUND_COLOR:
                 modifyTextToColorMap(config.useCustomBackgroundColor(), CUSTOM_BACKGROUND_COLOR, config.customBackgroundColor());
                 break;
             case USE_CUSTOM_TEXT_COLOR:
+            case CUSTOM_TEXT_COLOR:
                 modifyTextToColorMap(config.useCustomTextColor(), CUSTOM_TEXT_COLOR, config.customTextColor());
                 break;
             case OVERLAY_BACKGROUND_COLOR:
@@ -63,7 +65,7 @@ public class LingeringClickTooltipsTextColorManager {
         }
     }
 
-    private void modifyTextToColorMap(boolean configEnabled, String text, Color color)
+    private static void modifyTextToColorMap(boolean configEnabled, String text, Color color)
     {
         if (configEnabled)
         {

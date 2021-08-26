@@ -16,6 +16,12 @@ Offers lots of options to configure tooltip appearance, including duration, fade
 There are many ways to combine the different settings. Hopefully everyone can make use of this feature!<br><br>
 If you would like to request/enhance a feature or if you notice a bug, remember to submit an issue. Read below for update notes!<br>
 
+#### Patch 1.3.2 (Aug 26, 2021)
+* [ * ] Custom text and custom background color did not update properly from config.
+  * When selecting new colors, the code did not propagate the update to the components. New colors now instantly begin applying to tooltips.
+* [ * ] Puzzles pieces were not being filtered out by trivial clicks correctly.
+  * The wrong text was utilized for checking. It has been corrected to "Move Sliding piece" (was "Move").
+
 #### Patch 1.3.1 (Aug 11, 2021)
 * [ + ] New config "SHIFT blocks" added to "Hotkeys": Choose whether clicks should be consumed while holding SHIFT, must have filter mode set to blacklist/whitelist.
   * This allows users to peek a filter list action without the native client processing clicks.

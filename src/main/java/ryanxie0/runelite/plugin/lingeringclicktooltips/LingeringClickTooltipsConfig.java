@@ -315,7 +315,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "tooltipXOffset",
 		name = "Tooltip x offset",
-		description = "Horizontal offset for lingering tooltips, higher values move the tooltip further right",
+		description = "Horizontal offset for tooltips, lingering location only, higher values move the tooltip further right",
 		position = 1,
 		section = location
 	)
@@ -325,7 +325,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "tooltipYOffset",
 		name = "Tooltip y offset",
-		description = "Vertical offset for lingering tooltips, positive values move the tooltip down",
+		description = "Vertical offset for tooltips, lingering location only, positive values move the tooltip down",
 		position = 2,
 		section = location
 	)
@@ -335,7 +335,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "clampXPadding",
 		name = "Clamp x padding",
-		description = "The minimum distance between tooltips and the left/right window borders, 0 means no gap",
+		description = "The minimum distance between tooltips and the left/right window borders, lingering location only, 0 means no gap",
 		position = 3,
 		section = location
 	)
@@ -345,7 +345,7 @@ public interface LingeringClickTooltipsConfig extends Config
 	@ConfigItem(
 		keyName = "clampYPadding",
 		name = "Clamp y padding",
-		description = "The minimum distance between tooltips and the top/bottom window borders, 0 means no gap",
+		description = "The minimum distance between tooltips and the top/bottom window borders, lingering location only, 0 means no gap",
 		position = 4,
 		section = location
 	)
